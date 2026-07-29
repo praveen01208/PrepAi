@@ -1,5 +1,7 @@
 # AI-Powered Mock Interview Platform
 
+[Mohamed Amaan Profile](https://amaan.devtree.site/)
+
 ## Tech Blog and Products
 [DevBlog](https://www.devblog.blog/)
 
