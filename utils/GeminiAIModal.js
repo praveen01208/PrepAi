@@ -7,9 +7,12 @@ const {
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
-});
+const CANDIDATE_MODELS = [
+  "gemini-3.6-flash",
+  "gemini-flash-latest",
+  "gemini-3.7-flash",
+  "gemini-3-flash-preview",
+];
 
 const generationConfig = {
   temperature: 1,
@@ -30,12 +33,25 @@ const safetySettings = [
   },
 ];
 
-export const chatSession = model.startChat({
-  generationConfig,
-  safetySettings,
-});
+// Helper: create a chat session with automatic fallback across available models
+export const createChatSession = () => {
+  return {
+    async sendMessage(prompt) {
+      let lastError;
+      for (const modelName of CANDIDATE_MODELS) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const session = model.startChat({ generationConfig, safetySettings });
+          return await session.sendMessage(prompt);
+        } catch (err) {
+          console.warn(`[GeminiAI] Model ${modelName} failed, trying fallback:`, err.message);
+          lastError = err;
+        }
+      }
+      throw lastError;
+    },
+  };
+};
 
-// Helper: create a fresh chat session for isolated API route calls
-export const createChatSession = () =>
-  model.startChat({ generationConfig, safetySettings });
+export const chatSession = createChatSession();
 

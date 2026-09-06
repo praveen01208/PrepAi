@@ -31,16 +31,23 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "question and userAns are required" }, { status: 400 });
     }
 
-    // Build Gemini feedback prompt
-    const feedbackPrompt = `Question: ${question}
-User Answer: ${userAns}
+    // Build PREP-AI feedback prompt (supports code and conceptual answers)
+    const feedbackPrompt = `You are PREP-AI, an expert Principal Engineer and Technical Interviewer.
+Evaluate the candidate's answer/code solution for the following technical question:
 
-Evaluate the user's answer for the given interview question.
-Provide a rating out of 10 and feedback (3-5 lines) for improvement.
-Respond in this exact JSON format:
+Technical Question: ${question}
+Ideal / Reference Solution: ${correctAns}
+Candidate's Submission:
+${userAns}
+
+Instructions:
+1. Evaluate the candidate's code correctness, algorithmic approach, Big-O time & space efficiency, edge cases, and clarity.
+2. Provide a constructive rating from 1 to 10 (integer or float).
+3. Provide a concise, highly actionable evaluation (3-5 sentences) highlighting key strengths and areas of optimization.
+4. Output MUST be valid JSON only in this exact format:
 {
-  "rating": 7,
-  "feedback": "Your feedback here."
+  "rating": 8,
+  "feedback": "Your concise evaluation and optimization tips here."
 }`;
 
     const session = createChatSession();
