@@ -897,20 +897,20 @@ const LeetCodeArena = () => {
 
       {/* LeetCode Interactive Code Workspace Dialog */}
       <Dialog open={!!activeProblem} onOpenChange={(open) => !open && setActiveProblem(null)}>
-        <DialogContent className="max-w-6xl w-[96vw] rounded-3xl p-0 overflow-hidden glass-panel border border-white/60 dark:border-white/10 shadow-2xl">
+        <DialogContent className="max-w-6xl w-[96vw] max-h-[92vh] rounded-3xl p-0 overflow-y-auto lg:overflow-hidden glass-panel border border-white/60 dark:border-white/10 shadow-2xl">
           {activeProblem && (
-            <div className="flex flex-col h-[85vh]">
+            <div className="flex flex-col min-h-0 lg:h-[85vh]">
               {/* Top Modal Header */}
-              <div className="flex items-center justify-between px-6 py-4 bg-slate-900/90 border-b border-white/10 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-900/90 border-b border-white/10 shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
                     #{activeProblem.number}
                   </div>
                   <div>
-                    <DialogTitle className="text-base sm:text-lg font-black text-white">
+                    <DialogTitle className="text-sm sm:text-lg font-black text-white">
                       {activeProblem.title}
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-slate-400">
+                    <DialogDescription className="text-[11px] sm:text-xs text-slate-400">
                       {activeProblem.category} • {activeProblem.difficulty}
                     </DialogDescription>
                   </div>
@@ -920,7 +920,7 @@ const LeetCodeArena = () => {
                   <select
                     value={selectedLang}
                     onChange={(e) => handleLangChange(e.target.value)}
-                    className="text-xs font-bold px-3 py-1.5 rounded-xl glass-input text-slate-200 cursor-pointer"
+                    className="text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl glass-input text-slate-200 cursor-pointer"
                   >
                     <option value="javascript" className="bg-slate-900">JavaScript</option>
                     <option value="typescript" className="bg-slate-900">TypeScript</option>
@@ -933,9 +933,9 @@ const LeetCodeArena = () => {
               </div>
 
               {/* Body: Split View (Problem Description Left + Code Editor Right) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 flex-1 overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 flex-1 min-h-0 lg:overflow-hidden">
                 {/* Left Description Pane */}
-                <div className="lg:col-span-5 p-5 sm:p-6 overflow-y-auto space-y-4 border-r border-slate-200/60 dark:border-white/10 text-xs">
+                <div className="lg:col-span-5 p-4 sm:p-6 lg:overflow-y-auto space-y-4 border-b lg:border-b-0 lg:border-r border-slate-200/60 dark:border-white/10 text-xs">
                   <div>
                     <h4 className="font-bold text-slate-400 uppercase text-[11px] mb-2">Description</h4>
                     <p className="text-slate-800 dark:text-slate-200 leading-relaxed font-sans text-xs sm:text-sm">
@@ -981,8 +981,8 @@ const LeetCodeArena = () => {
                 </div>
 
                 {/* Right Code Editor & Result Pane */}
-                <div className="lg:col-span-7 flex flex-col justify-between overflow-hidden bg-slate-950 p-4 space-y-3">
-                  <div className="relative rounded-xl overflow-hidden glass-terminal border border-white/10 flex-1 flex flex-col">
+                <div className="lg:col-span-7 flex flex-col justify-between lg:overflow-hidden bg-slate-950 p-4 space-y-3 min-h-[380px] lg:min-h-0">
+                  <div className="relative rounded-xl overflow-hidden glass-terminal border border-white/10 flex-1 flex flex-col min-h-[220px]">
                     <div className="px-4 py-2 bg-slate-900/80 border-b border-white/10 flex items-center justify-between text-[11px] text-slate-400 font-mono">
                       <span>solution.{selectedLang === "python" ? "py" : selectedLang === "java" ? "java" : selectedLang === "cpp" ? "cpp" : selectedLang === "go" ? "go" : selectedLang === "typescript" ? "ts" : "js"}</span>
                       <span className="text-cyan-400/80">Type your code inside the template</span>
