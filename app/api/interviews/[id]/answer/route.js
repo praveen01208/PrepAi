@@ -8,11 +8,17 @@ import { rateLimit } from "@/utils/rateLimit";
 // POST /api/interviews/[id]/answer — evaluate answer with Gemini and save to DB
 export async function POST(request, { params }) {
   try {
-    const { userId } = await auth();
-    const user = await currentUser();
-    if (!userId || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Auth is graceful — allow guest submissions
+    let userId = "guest_user";
+    let userEmail = "candidate@prep-ai.com";
+    try {
+      const authResult = await auth();
+      if (authResult?.userId) userId = authResult.userId;
+      const user = await currentUser();
+      if (user?.primaryEmailAddress?.emailAddress) {
+        userEmail = user.primaryEmailAddress.emailAddress;
+      }
+    } catch (_) {}
 
     // Rate limit: 30 answers per 5 minutes per user
     const rl = rateLimit(`record-answer:${userId}`, { limit: 30, windowMs: 5 * 60_000 });
@@ -69,7 +75,6 @@ Instructions:
       );
     }
 
-    const userEmail = user.primaryEmailAddress?.emailAddress ?? "";
     const createdAt = new Date().toISOString().split("T")[0];
 
     await db.insert(UserAnswer).values({

@@ -4,14 +4,9 @@ import { db } from "@/utils/db";
 import { MockInterview } from "@/utils/schema";
 import { eq } from "drizzle-orm";
 
-// GET /api/interviews/[id] — fetch a single interview by ID (auth-gated)
+// GET /api/interviews/[id] — fetch a single interview by mockId
 export async function GET(request, { params }) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id } = params;
     if (!id) {
       return NextResponse.json({ error: "Interview ID is required" }, { status: 400 });
