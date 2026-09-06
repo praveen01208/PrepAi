@@ -275,10 +275,18 @@ export default function JobTrackerPage() {
                     {STATUSES.map(s => <option key={s} value={s} className="bg-slate-900 text-white">{s}</option>)}
                   </select>
                   {job.url && (
-                    <a href={job.url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">
+                    <a href={job.url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all" title="Open Job Post">
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   )}
+                  <Link
+                    href={`/dashboard/interview?role=${encodeURIComponent(job.role)}&company=${encodeURIComponent(job.company)}`}
+                    className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all"
+                    title="Start Mock Interview for this Job"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span className="hidden sm:inline">Practice</span>
+                  </Link>
                   <button onClick={() => startEdit(job)} className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>

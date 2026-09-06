@@ -25,10 +25,10 @@ const Header = () => {
   const navLinks = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "LeetCode Arena", href: "/dashboard/leetcode", icon: Code2 },
-    { name: "Courses & Roadmaps", href: "/dashboard/courses", icon: BookOpen },
-    { name: "Question Bank", href: "/dashboard/question", icon: HelpCircle },
-    { name: "Arena Game", href: "/dashboard/game", icon: Gamepad2 },
-    { name: "Upgrade", href: "/dashboard/upgrade", icon: Sparkles },
+    { name: "Resume ATS", href: "/dashboard/resume", icon: BookOpen },
+    { name: "Skill Gap", href: "/dashboard/skillgap", icon: Zap },
+    { name: "Communication", href: "/dashboard/communication", icon: HelpCircle },
+    { name: "Job Tracker", href: "/dashboard/jobs", icon: Gamepad2 },
   ];
 
   return (

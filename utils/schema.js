@@ -155,3 +155,108 @@ export const Newsletter = pgTable('newsletter', {
     newMessage: text('newMessage'),
     createdAt: varchar('createdAt')
 });
+
+// Adaptive AI Mock Interview Sessions
+export const AdaptiveInterview = pgTable('adaptiveInterview', {
+    id: serial('id').primaryKey(),
+    sessionId: varchar('sessionId').notNull().unique(),
+    userId: varchar('userId').notNull(),
+    userEmail: varchar('userEmail'),
+    targetRole: varchar('targetRole').notNull(),
+    experienceLevel: varchar('experienceLevel').notNull(),
+    interviewType: varchar('interviewType').notNull(), // HR, Technical, Coding, Behavioral, Mixed, Resume-Based, Role-Specific
+    initialDifficulty: varchar('initialDifficulty').notNull().default('Intermediate'), // Beginner, Intermediate, Advanced
+    currentDifficulty: varchar('currentDifficulty').notNull().default('Intermediate'),
+    totalQuestions: integer('totalQuestions').notNull().default(5),
+    targetCompany: varchar('targetCompany'),
+    preferredLanguage: varchar('preferredLanguage').default('javascript'),
+    resumeContext: text('resumeContext'),
+    status: varchar('status').notNull().default('in_progress'), // in_progress, completed, abandoned
+    overallScore: varchar('overallScore'),
+    technicalScore: varchar('technicalScore'),
+    communicationScore: varchar('communicationScore'),
+    codingScore: varchar('codingScore'),
+    feedbackSummary: text('feedbackSummary'),
+    strengths: text('strengths'), // JSON array string
+    weaknesses: text('weaknesses'), // JSON array string
+    recommendedTopics: text('recommendedTopics'), // JSON array string
+    createdAt: varchar('createdAt').notNull(),
+    completedAt: varchar('completedAt')
+});
+
+// Adaptive Questions & Answers log within an adaptive session
+export const AdaptiveQuestion = pgTable('adaptiveQuestion', {
+    id: serial('id').primaryKey(),
+    sessionId: varchar('sessionId').notNull(),
+    questionIndex: integer('questionIndex').notNull(),
+    questionText: text('questionText').notNull(),
+    category: varchar('category').notNull().default('Technical'),
+    difficultyLevel: varchar('difficultyLevel').notNull().default('Intermediate'),
+    generatedFrom: varchar('generatedFrom').notNull().default('Initial'), // Initial, Follow-Up, Escalation, Simplification, Resume, Weak Area
+    idealAnswer: text('idealAnswer'),
+    userResponse: text('userResponse'),
+    userResponseMode: varchar('userResponseMode').default('text'), // voice, code, text
+    score: varchar('score'), // 0-100 or 1-10
+    relevanceScore: varchar('relevanceScore'),
+    clarityScore: varchar('clarityScore'),
+    technicalDepthScore: varchar('technicalDepthScore'),
+    fillerWordsCount: integer('fillerWordsCount').default(0),
+    fillerWordsDetails: text('fillerWordsDetails'), // JSON string
+    speakingPaceWpm: integer('speakingPaceWpm'),
+    confidenceRating: varchar('confidenceRating'),
+    evaluationFeedback: text('evaluationFeedback'),
+    adaptiveActionTaken: varchar('adaptiveActionTaken'), // escalate, maintain, simplify, follow_up
+    createdAt: varchar('createdAt').notNull()
+});
+
+// Persisted User Resume Profiles & ATS Analysis
+export const ResumeProfile = pgTable('resumeProfile', {
+    id: serial('id').primaryKey(),
+    userId: varchar('userId').notNull(),
+    userEmail: varchar('userEmail'),
+    fileName: varchar('fileName').notNull(),
+    rawResumeText: text('rawResumeText').notNull(),
+    targetRole: varchar('targetRole'),
+    overallScore: integer('overallScore'),
+    atsScore: integer('atsScore'),
+    impactScore: integer('impactScore'),
+    extractedSkills: text('extractedSkills'), // JSON string of categorized skills
+    extractedProjects: text('extractedProjects'), // JSON string
+    extractedExperience: text('extractedExperience'), // JSON string
+    missingSkills: text('missingSkills'), // JSON string
+    analysisJson: text('analysisJson'),
+    createdAt: varchar('createdAt').notNull()
+});
+
+// Job Applications & Interview Pipeline Tracker
+export const JobTracker = pgTable('jobTracker', {
+    id: serial('id').primaryKey(),
+    userId: varchar('userId').notNull(),
+    userEmail: varchar('userEmail'),
+    companyName: varchar('companyName').notNull(),
+    jobRole: varchar('jobRole').notNull(),
+    location: varchar('location'),
+    salaryPackage: varchar('salaryPackage'),
+    status: varchar('status').notNull().default('Applied'), // Wishlist, Applied, Screening, Interview Scheduled, Completed, Offer, Rejected, Withdrawn
+    appliedDate: varchar('appliedDate'),
+    interviewDate: varchar('interviewDate'),
+    interviewRound: varchar('interviewRound'),
+    jobUrl: text('jobUrl'),
+    priority: varchar('priority').default('medium'), // high, medium, low
+    notes: text('notes'),
+    createdAt: varchar('createdAt').notNull(),
+    updatedAt: varchar('updatedAt')
+});
+
+// User Skill Assessment & Progress Matrix
+export const UserSkillMatrix = pgTable('userSkillMatrix', {
+    id: serial('id').primaryKey(),
+    userId: varchar('userId').notNull(),
+    skillName: varchar('skillName').notNull(),
+    category: varchar('category').notNull(), // Frontend, Backend, DSA, System Design, Communication, etc.
+    proficiencyLevel: varchar('proficiencyLevel').notNull().default('Beginner'), // Beginner, Intermediate, Advanced
+    score: integer('score').notNull().default(50),
+    lastEvaluatedSource: varchar('lastEvaluatedSource'), // mock_interview, leetcode, resume, communication
+    updatedAt: varchar('updatedAt').notNull()
+});
+

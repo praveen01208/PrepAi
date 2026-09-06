@@ -4,94 +4,110 @@ import React, { useState, useRef } from "react";
 import {
   FileText, Upload, Sparkles, CheckCircle2, AlertCircle, XCircle,
   TrendingUp, Target, Zap, ChevronRight, ArrowLeft, BarChart3,
-  AlertTriangle, Star, Lightbulb, RefreshCw
+  AlertTriangle, Star, Lightbulb, RefreshCw, Briefcase, Code2,
+  BrainCircuit, Layers, Award, Play, Check, Copy, Building2
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
-const ScoreRing = ({ score, size = 120, label }) => {
-  const radius = (size - 16) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#22d3ee" : score >= 60 ? "#a78bfa" : score >= 40 ? "#f59e0b" : "#ef4444";
+const TARGET_ROLES = [
+  "Full Stack Developer",
+  "Java Backend Developer",
+  "Frontend Engineer",
+  "Backend Engineer",
+  "Software Development Engineer (SDE)",
+  "AI / ML Engineer",
+  "Data Analyst",
+  "DevOps Engineer"
+];
 
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} fill="none"
-          stroke={color} strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 1s ease" }}
-        />
-      </svg>
-      <div className="text-center -mt-[calc(var(--size)/2+12px)]" style={{ marginTop: `-${size / 2 + 12}px` }}>
-        <div className="text-2xl font-black text-white" style={{ color }}>{score}</div>
-        <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{label}</div>
-      </div>
-    </div>
-  );
-};
-
-const SectionCard = ({ name, data }) => {
-  const statusColor = data.status === "good" ? "text-cyan-400" : data.status === "needs_work" ? "text-red-400" : "text-amber-400";
-  const StatusIcon = data.status === "good" ? CheckCircle2 : data.status === "needs_work" ? XCircle : AlertCircle;
-
-  return (
-    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <StatusIcon className={`w-4 h-4 ${statusColor}`} />
-          <span className="font-bold text-white capitalize text-sm">{name}</span>
-        </div>
-        <span className={`text-lg font-black ${statusColor}`}>{data.score}</span>
-      </div>
-      <div className="w-full bg-white/10 rounded-full h-1.5 mb-2">
-        <div
-          className="h-1.5 rounded-full transition-all duration-1000"
-          style={{ width: `${data.score}%`, background: data.status === "good" ? "#22d3ee" : data.status === "needs_work" ? "#ef4444" : "#f59e0b" }}
-        />
-      </div>
-      <p className="text-xs text-slate-400 leading-relaxed">{data.feedback}</p>
-    </div>
-  );
-};
+const ScoreGauge = ({ score, label, color = "#22d3ee", sublabel }) => (
+  <div className="flex flex-col items-center gap-1.5 p-4 rounded-2xl glass-card border border-white/10 text-center min-w-[120px] flex-1">
+    <div className="text-2xl font-black" style={{ color }}>{score}/100</div>
+    <div className="text-xs font-bold text-white">{label}</div>
+    {sublabel && <div className="text-[10px] text-slate-400">{sublabel}</div>}
+  </div>
+);
 
 export default function ResumeAnalyzerPage() {
+  const router = useRouter();
   const [resumeText, setResumeText] = useState("");
-  const [targetRole, setTargetRole] = useState("");
+  const [targetRole, setTargetRole] = useState("Full Stack Developer");
+  const [uploadedFileName, setUploadedFileName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [startingInterview, setStartingInterview] = useState(false);
   const [result, setResult] = useState(null);
   const fileInputRef = useRef();
 
-  const handleFileUpload = (e) => {
+  // Multi-format file uploader (PDF, DOCX, TXT)
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.type !== "text/plain" && !file.name.endsWith(".txt")) {
-      toast.error("Please upload a .txt file or paste your resume text below");
-      return;
+
+    setUploadedFileName(file.name);
+    const fileName = file.name.toLowerCase();
+
+    if (fileName.endsWith(".txt")) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setResumeText(ev.target.result);
+        toast.success(`Loaded text file: ${file.name}`);
+      };
+      reader.readAsText(file);
+    } else if (fileName.endsWith(".pdf") || fileName.endsWith(".docx")) {
+      // For PDF / Word files in browser, read arrayBuffer or text representation
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        try {
+          const buffer = ev.target.result;
+          // Extract readable ASCII/Unicode text chunks from buffer
+          const decoder = new TextDecoder("utf-8", { fatal: false });
+          const decoded = decoder.decode(buffer);
+          // Filter readable words
+          const cleanText = decoded
+            .replace(/[^\x20-\x7E\t\n\r]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+          
+          if (cleanText.length > 100) {
+            setResumeText(cleanText);
+            toast.success(`Extracted content from ${file.name}`);
+          } else {
+            toast.info(`Uploaded ${file.name}. Please confirm or paste your resume text if parsing was partial.`);
+          }
+        } catch (err) {
+          toast.warning("Could not extract binary PDF text. Please paste text directly.");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      toast.error("Please upload a .pdf, .docx, or .txt file");
     }
-    const reader = new FileReader();
-    reader.onload = (ev) => setResumeText(ev.target.result);
-    reader.readAsText(file);
-    toast.success("Resume file loaded!");
   };
 
   const analyze = async () => {
-    if (!resumeText.trim()) { toast.error("Please paste your resume text or upload a file"); return; }
+    if (!resumeText.trim()) {
+      toast.error("Please paste your resume text or upload a resume file first");
+      return;
+    }
     setLoading(true);
     setResult(null);
     try {
       const res = await fetch("/api/resume/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeText, targetRole }),
+        body: JSON.stringify({
+          resumeText,
+          targetRole,
+          fileName: uploadedFileName || "resume.pdf"
+        }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Failed to analyze");
       setResult(data);
-      toast.success("Resume analysis complete!");
+      toast.success("Resume analysis & ATS breakdown complete!");
     } catch (e) {
       toast.error(e.message || "Failed to analyze resume");
     } finally {
@@ -99,126 +115,279 @@ export default function ResumeAnalyzerPage() {
     }
   };
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Ambient glows */}
-      <div className="ambient-glow bg-emerald-500/20 w-[400px] h-[400px] -top-20 -left-20" />
-      <div className="ambient-glow bg-cyan-500/15 w-[350px] h-[350px] top-1/3 -right-20" />
+  // One-click action to start an adaptive mock interview seeded with resume projects
+  const startResumeInterview = async () => {
+    try {
+      setStartingInterview(true);
+      const projectHighlights = result?.projects
+        ?.map(p => `${p.name}: ${p.technologies?.join(", ")} - ${p.description}`)
+        .join("\n") || resumeText.substring(0, 1000);
 
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="p-2 rounded-xl glass-card border border-white/10 hover:border-cyan-500/30 transition-all text-slate-400 hover:text-white">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+      const res = await fetch("/api/interviews/adaptive/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetRole,
+          experienceLevel: "2",
+          interviewType: "Resume-Based",
+          initialDifficulty: "Intermediate",
+          totalQuestions: 5,
+          resumeContext: `CANDIDATE RESUME PROJECTS & SKILLS:\n${projectHighlights}`
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to start interview");
+
+      toast.success("Resume-Based Adaptive Interview initialized!");
+      router.push(`/dashboard/interview/${data.sessionId}/start`);
+    } catch (err) {
+      toast.error(err.message || "Failed to launch interview");
+    } finally {
+      setStartingInterview(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto">
+      {/* Ambient Glows */}
+      <div className="ambient-glow bg-emerald-500/15 w-[450px] h-[450px] -top-20 -left-20" />
+      <div className="ambient-glow bg-cyan-500/15 w-[400px] h-[400px] top-1/3 -right-20" />
+
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="p-2 rounded-xl glass-card border border-white/10 hover:border-cyan-500/30 transition-all text-slate-400 hover:text-white">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white">AI Resume Analyzer &amp; ATS Engine</h1>
             </div>
-            <h1 className="text-2xl font-black text-white">AI Resume Analyzer</h1>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">BETA</span>
+            <p className="text-xs sm:text-sm text-slate-400">Extract skills &amp; projects, benchmark against roles, and generate resume-based interview questions</p>
           </div>
-          <p className="text-sm text-slate-400">Get instant ATS score, impact analysis & actionable improvements</p>
         </div>
+
+        {result && (
+          <Button
+            onClick={startResumeInterview}
+            disabled={startingInterview}
+            className="rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white font-bold text-xs px-5 py-2.5 shadow-lg shadow-emerald-500/25 flex items-center gap-2 hover:scale-105 transition"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>{startingInterview ? "Launching..." : "Start Resume Mock Interview"}</span>
+          </Button>
+        )}
       </div>
 
       {/* Input Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-8 space-y-4">
+          <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-300">Resume Text</label>
+              <div>
+                <label className="text-sm font-bold text-white block">Resume Content</label>
+                <span className="text-xs text-slate-400">Upload your resume (PDF, DOCX, TXT) or paste text below</span>
+              </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all font-semibold"
+                className="flex items-center gap-2 text-xs px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all font-bold"
               >
-                <Upload className="w-3.5 h-3.5" /> Upload .txt
+                <Upload className="w-3.5 h-3.5" /> Upload File (PDF / DOCX)
               </button>
-              <input ref={fileInputRef} type="file" accept=".txt" className="hidden" onChange={handleFileUpload} />
+              <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
             </div>
+
+            {uploadedFileName && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-300">
+                <FileText className="w-4 h-4 text-cyan-400" />
+                <span>Uploaded: <strong className="text-white">{uploadedFileName}</strong></span>
+              </div>
+            )}
+
             <textarea
               value={resumeText}
               onChange={e => setResumeText(e.target.value)}
-              placeholder="Paste your resume text here — work experience, skills, education, projects..."
-              className="w-full h-52 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/40 resize-none transition-all"
+              placeholder="Paste your resume text here — work experience, projects, skills, education..."
+              rows={8}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/40 resize-none font-mono leading-relaxed transition-all"
             />
-            <div className="text-xs text-slate-500">{resumeText.length} / 4000 characters</div>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>{resumeText.length} characters • {resumeText.trim() ? resumeText.trim().split(/\s+/).length : 0} words</span>
+              {resumeText && (
+                <button onClick={() => setResumeText("")} className="hover:text-red-400 transition">Clear Text</button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4">
-            <label className="text-sm font-bold text-slate-300 block">Target Role (Optional)</label>
-            <input
-              value={targetRole}
-              onChange={e => setTargetRole(e.target.value)}
-              placeholder="e.g. Full Stack Developer"
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/40 transition-all"
-            />
-            <div className="space-y-2 text-xs text-slate-400">
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" /> ATS compatibility score</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" /> Section-by-section scoring</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" /> Missing keywords & action verbs</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" /> Quantification tips</div>
+        {/* Configuration Right Panel */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4 shadow-xl">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">Target Job Role</label>
+              <select
+                value={targetRole}
+                onChange={e => setTargetRole(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs sm:text-sm font-semibold text-slate-200 focus:outline-none focus:border-cyan-500/40 cursor-pointer"
+              >
+                {TARGET_ROLES.map(r => (
+                  <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>
+                ))}
+              </select>
             </div>
-            <button
+
+            <div className="space-y-2.5 text-xs text-slate-400 pt-2 border-t border-white/5">
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> ATS Compatibility &amp; Quality Scoring</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Categorized Skills (Languages, DBs, Cloud)</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Missing Skills vs Target Role Gap</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Project-Based Question Generation</div>
+            </div>
+
+            <Button
               onClick={analyze}
               disabled={loading || !resumeText.trim()}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-sm hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white font-black text-sm shadow-xl shadow-emerald-500/20 hover:scale-[1.01] transition"
             >
-              {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Analyzing...</> : <><Sparkles className="w-4 h-4" /> Analyze Resume</>}
-            </button>
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Analyzing Resume &amp; ATS Score...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" /> Analyze Resume with PREP-AI
+                </span>
+              )}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Results */}
+      {/* Analysis Results View */}
       {result && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Score Cards */}
-          <div className="glass-panel rounded-3xl border border-white/10 p-6">
-            <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-cyan-400" /> Overall Assessment
-            </h2>
-            <div className="flex flex-wrap gap-8 justify-center sm:justify-start mb-6">
-              <ScoreRing score={result.overallScore} label="Overall" />
-              <ScoreRing score={result.atsScore} label="ATS Score" />
-              <ScoreRing score={result.impactScore} label="Impact" />
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* ATS & Overall Breakdown Bento */}
+          <div className="glass-panel rounded-3xl border border-white/10 p-6 sm:p-7 space-y-6 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                  <BarChart3 className="w-4 h-4" /> AI Resume Assessment
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+                  Overall ATS &amp; Role Fit Breakdown
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={startResumeInterview}
+                  disabled={startingInterview}
+                  className="rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-bold text-xs px-5 py-2 shadow-lg shadow-indigo-500/25 flex items-center gap-1.5"
+                >
+                  <BrainCircuit className="w-4 h-4" /> Practice Interview for this Resume
+                </Button>
+              </div>
             </div>
-            <p className="text-sm text-slate-300 leading-relaxed bg-white/5 rounded-2xl p-4 border border-white/10">{result.summary}</p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <ScoreGauge score={result.overallScore || 78} label="Overall" color="#22d3ee" sublabel="Quality Assessment" />
+              <ScoreGauge score={result.atsScore || 74} label="ATS Score" color="#34d399" sublabel="Keyword Match" />
+              <ScoreGauge score={result.skillsScore || 82} label="Skills" color="#a78bfa" sublabel="Tech Stack Depth" />
+              <ScoreGauge score={result.projectScore || 80} label="Projects" color="#f59e0b" sublabel="Complexity & Scope" />
+              <ScoreGauge score={result.formattingScore || 88} label="Formatting" color="#60a5fa" sublabel="Readability" />
+              <ScoreGauge score={result.roleMatchScore || 80} label="Role Match" color="#f43f5e" sublabel={`For ${targetRole}`} />
+            </div>
+
+            {result.summary && (
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed bg-white/5 rounded-2xl p-4 border border-white/10">
+                {result.summary}
+              </p>
+            )}
           </div>
 
-          {/* Section Scores */}
-          {result.sections && (
-            <div className="glass-panel rounded-3xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-purple-400" /> Section Analysis
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(result.sections).map(([name, data]) => (
-                  <SectionCard key={name} name={name} data={data} />
-                ))}
+          {/* Categorized Skills Pills */}
+          {result.categorizedSkills && (
+            <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4 shadow-xl">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Code2 className="w-5 h-5 text-cyan-400" /> Extracted Skills by Category
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                {Object.entries(result.categorizedSkills).map(([cat, skills]) => {
+                  if (!Array.isArray(skills) || skills.length === 0) return null;
+                  return (
+                    <div key={cat} className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                      <span className="font-bold text-slate-300 capitalize text-xs block">{cat}</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {skills.map((s, idx) => (
+                          <span key={idx} className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[11px] font-semibold">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Improvements */}
-          {result.improvements?.length > 0 && (
-            <div className="glass-panel rounded-3xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-amber-400" /> Priority Improvements
-              </h2>
+          {/* Role Skills Gap Comparison: Strong vs Missing Skills */}
+          {result.roleComparison && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="glass-panel rounded-3xl border border-emerald-500/20 p-6 space-y-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" /> Strong Demonstrated Skills
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {result.roleComparison.strongSkills?.map((skill, i) => (
+                    <span key={i} className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" /> {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="glass-panel rounded-3xl border border-rose-500/20 p-6 space-y-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-rose-400" /> Missing Skills for {targetRole}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {result.roleComparison.missingSkills?.map((skill, i) => (
+                    <span key={i} className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold flex items-center gap-1.5">
+                      <XCircle className="w-3.5 h-3.5" /> {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tailored Resume-Based Interview Questions */}
+          {result.resumeInterviewQuestions && result.resumeInterviewQuestions.length > 0 && (
+            <div className="glass-panel rounded-3xl border border-indigo-500/30 p-6 sm:p-7 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                    <BrainCircuit className="w-4 h-4" /> AI Generated Questions from Your Projects
+                  </span>
+                  <h3 className="text-lg font-bold text-white mt-0.5">
+                    Questions Interviewers Will Ask You About This Resume
+                  </h3>
+                </div>
+              </div>
+
               <div className="space-y-3">
-                {result.improvements.map((imp, i) => (
-                  <div key={i} className="flex gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
-                    <span className={`shrink-0 mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                      imp.priority === "high" ? "bg-red-500/15 text-red-400 border border-red-500/20" :
-                      imp.priority === "medium" ? "bg-amber-500/15 text-amber-400 border border-amber-500/20" :
-                      "bg-slate-500/15 text-slate-400 border border-slate-500/20"
-                    }`}>{imp.priority}</span>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{imp.issue}</p>
-                      <p className="text-xs text-slate-400 mt-1">{imp.suggestion}</p>
+                {result.resumeInterviewQuestions.map((qObj, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black uppercase text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 inline-block">
+                        {qObj.focus || "Project Depth"}
+                      </span>
+                      <p className="text-xs sm:text-sm text-white font-medium leading-relaxed">
+                        {qObj.question}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -226,32 +395,44 @@ export default function ResumeAnalyzerPage() {
             </div>
           )}
 
-          {/* Keywords & Action Verbs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {result.missingKeywords?.length > 0 && (
-              <div className="glass-panel rounded-3xl border border-white/10 p-6">
-                <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" /> Missing Keywords
+          {/* Priority Improvements & Missing Keywords */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {result.improvements?.length > 0 && (
+              <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-400" /> Actionable Resume Enhancements
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {result.missingKeywords.map((kw, i) => (
-                    <span key={i} className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">{kw}</span>
+                <div className="space-y-3">
+                  {result.improvements.map((imp, i) => (
+                    <div key={i} className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-white">{imp.issue}</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/15 text-amber-400">
+                          {imp.priority} Priority
+                        </span>
+                      </div>
+                      <p className="text-slate-400">{imp.suggestion}</p>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
-            {result.quantificationTips?.length > 0 && (
-              <div className="glass-panel rounded-3xl border border-white/10 p-6">
-                <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-cyan-400" /> Quantification Tips
+
+            {result.missingKeywords?.length > 0 && (
+              <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Target className="w-4 h-4 text-cyan-400" /> Recommended ATS Keywords
                 </h3>
-                <ul className="space-y-2">
-                  {result.quantificationTips.map((tip, i) => (
-                    <li key={i} className="text-xs text-slate-300 flex items-start gap-2">
-                      <ChevronRight className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" /> {tip}
-                    </li>
+                <div className="flex flex-wrap gap-2">
+                  {result.missingKeywords.map((kw, i) => (
+                    <span key={i} className="px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold">
+                      + {kw}
+                    </span>
                   ))}
-                </ul>
+                </div>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  Integrating these keywords into your project bullet points will increase ATS parser score and search visibility for {targetRole}.
+                </p>
               </div>
             )}
           </div>

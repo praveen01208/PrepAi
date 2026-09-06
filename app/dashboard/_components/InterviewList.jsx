@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import InterviewItemCard from "./InterviewItemCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { History, Sparkles } from "lucide-react";
+import { History, Sparkles, BrainCircuit } from "lucide-react";
 
 const InterviewList = () => {
   const [interviewList, setInterviewList] = useState([]);
@@ -15,12 +15,40 @@ const InterviewList = () => {
 
   const fetchInterviews = async () => {
     try {
-      const res = await fetch("/api/interviews/list");
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      setInterviewList(data);
+      const [resLegacy, resAdaptive] = await Promise.allSettled([
+        fetch("/api/interviews/list"),
+        fetch("/api/interviews/adaptive/list")
+      ]);
+
+      let combined = [];
+
+      if (resAdaptive.status === "fulfilled" && resAdaptive.value.ok) {
+        const adaptiveData = await resAdaptive.value.json();
+        if (Array.isArray(adaptiveData)) {
+          const normalized = adaptiveData.map(a => ({
+            id: a.id,
+            mockId: a.sessionId,
+            jobPosition: a.targetRole,
+            jobDesc: `${a.interviewType} • ${a.currentDifficulty || a.initialDifficulty} Level`,
+            jobExperience: a.experienceLevel,
+            createdAt: a.createdAt?.split("T")[0] || "Recent",
+            isAdaptive: true,
+            score: a.overallScore
+          }));
+          combined = [...combined, ...normalized];
+        }
+      }
+
+      if (resLegacy.status === "fulfilled" && resLegacy.value.ok) {
+        const legacyData = await resLegacy.value.json();
+        if (Array.isArray(legacyData)) {
+          combined = [...combined, ...legacyData];
+        }
+      }
+
+      setInterviewList(combined);
     } catch {
-      // silently fail — user just won't see the list
+      // gracefully handle empty state
     } finally {
       setLoading(false);
     }
@@ -32,11 +60,11 @@ const InterviewList = () => {
         <div className="flex items-center gap-2">
           <History className="w-5 h-5 text-indigo-500" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-            Previous Mock Interviews
+            Interview History &amp; Reports
           </h2>
         </div>
         <span className="text-xs text-slate-500">
-          {interviewList.length} Sessions saved
+          {interviewList.length} Sessions recorded
         </span>
       </div>
 
@@ -52,12 +80,12 @@ const InterviewList = () => {
         </div>
       ) : interviewList.length === 0 ? (
         <div className="p-8 rounded-3xl glass-panel border border-dashed text-center space-y-2">
-          <Sparkles className="w-8 h-8 text-indigo-400 mx-auto opacity-75" />
+          <BrainCircuit className="w-8 h-8 text-cyan-400 mx-auto opacity-75 animate-pulse" />
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            No mock interviews found yet.
+            No mock interviews recorded yet.
           </p>
           <p className="text-xs text-slate-500">
-            Click &ldquo;+ Create New Mock Interview&rdquo; above to get started!
+            Click &ldquo;+ Start Adaptive AI Mock Interview&rdquo; above to begin your first session!
           </p>
         </div>
       ) : (

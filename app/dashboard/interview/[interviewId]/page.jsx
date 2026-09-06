@@ -12,24 +12,59 @@ import {
   Layers,
   BookOpen,
   Zap,
+  Flame,
+  BrainCircuit,
+  Building2,
+  Mic,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 const Interview = ({ params }) => {
-  const [interviewData, setInterviewData] = useState(null);
+  const [sessionData, setSessionData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchInterviewDetails();
-  }, []);
+    fetchSessionDetails();
+  }, [params.interviewId]);
 
-  const fetchInterviewDetails = async () => {
+  const fetchSessionDetails = async () => {
     try {
-      const res = await fetch(`/api/interviews/${params.interviewId}`);
-      if (!res.ok) throw new Error("Failed to fetch interview");
-      const data = await res.json();
-      setInterviewData(data);
+      // Try adaptive endpoint first
+      const resAdaptive = await fetch(`/api/interviews/adaptive/${params.interviewId}`);
+      if (resAdaptive.ok) {
+        const data = await resAdaptive.json();
+        if (data && data.session) {
+          setSessionData({
+            role: data.session.targetRole,
+            exp: data.session.experienceLevel,
+            type: data.session.interviewType,
+            difficulty: data.session.currentDifficulty || data.session.initialDifficulty,
+            company: data.session.targetCompany,
+            totalQuestions: data.session.totalQuestions,
+            language: data.session.preferredLanguage,
+            isAdaptive: true
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Fallback to legacy mock interview endpoint
+      const resLegacy = await fetch(`/api/interviews/${params.interviewId}`);
+      if (resLegacy.ok) {
+        const data = await resLegacy.json();
+        setSessionData({
+          role: data.jobPosition,
+          exp: data.jobExperience,
+          type: "Technical & Coding",
+          difficulty: "Intermediate",
+          desc: data.jobDesc,
+          totalQuestions: 5,
+          isAdaptive: false
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -41,35 +76,30 @@ const Interview = ({ params }) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3 text-slate-500">
         <Sparkles className="w-8 h-8 text-cyan-500 animate-spin" />
-        <span className="text-sm font-semibold">Configuring technical session environment...</span>
+        <span className="text-sm font-semibold">Configuring adaptive interview workspace...</span>
       </div>
     );
   }
 
-  if (!interviewData) {
-    return (
-      <div className="p-8 text-center glass-panel rounded-3xl max-w-lg mx-auto text-red-500 space-y-2">
-        <h3 className="font-bold text-lg">Interview Not Found</h3>
-        <p className="text-xs text-slate-500">The requested interview session could not be loaded.</p>
-        <Link href="/dashboard" className="inline-block mt-4 text-xs font-semibold text-indigo-500 underline">
-          Return to Dashboard
-        </Link>
-      </div>
-    );
-  }
+  const role = sessionData?.role || "Software Engineer";
+  const exp = sessionData?.exp || "2";
+  const type = sessionData?.type || "Technical";
+  const diff = sessionData?.difficulty || "Intermediate";
+  const company = sessionData?.company;
+  const totalQ = sessionData?.totalQuestions || 5;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto">
       {/* Top Header */}
       <div className="text-center space-y-2">
-        <span className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3.5 py-1 rounded-full">
-          PREP-AI SESSION BRIEFING
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3.5 py-1 rounded-full">
+          <BrainCircuit className="w-3.5 h-3.5" /> PREP-AI ADAPTIVE SESSION BRIEFING
         </span>
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-          Technical Challenge Overview
+          Session Parameters &amp; Objectives
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-300 max-w-lg mx-auto">
-          Review your session parameters and technical requirements before entering the workspace.
+          Review your target profile and evaluation criteria before entering the live adaptive workspace.
         </p>
       </div>
 
@@ -82,57 +112,58 @@ const Interview = ({ params }) => {
                 <Terminal className="w-4 h-4 text-indigo-500" /> Target Profile
               </h3>
               <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> 5 Challenges Ready
+                <CheckCircle2 className="w-3.5 h-3.5" /> {totalQ} Dynamic Questions Ready
               </span>
             </div>
 
             <div className="space-y-4 text-sm">
               <div>
-                <span className="text-xs text-slate-400 block font-semibold uppercase tracking-wider">Job Role:</span>
-                <span className="font-black text-lg text-slate-900 dark:text-white">
-                  {interviewData.jobPosition}
+                <span className="text-xs text-slate-400 block font-semibold uppercase tracking-wider">Target Role:</span>
+                <span className="font-black text-xl text-slate-900 dark:text-white">
+                  {role}
                 </span>
               </div>
 
-              <div>
-                <span className="text-xs text-slate-400 block font-semibold uppercase tracking-wider">Focus Areas &amp; Stack:</span>
-                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 mt-1 leading-relaxed bg-slate-100/60 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-200/80 dark:border-white/5 font-mono">
-                  {interviewData.jobDesc}
-                </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Interview Type</span>
+                  <span className="text-xs font-bold text-cyan-400">{type}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Seniority</span>
+                  <span className="text-xs font-bold text-slate-200">{exp} Years Exp</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Initial Level</span>
+                  <span className="text-xs font-bold text-purple-400">{diff}</span>
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <span className="text-xs px-3 py-1 rounded-xl glass-card font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10">
-                  Seniority: {interviewData.jobExperience} Years
-                </span>
-                <span className="text-xs px-3 py-1 rounded-xl glass-card font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10">
-                  Evaluation: Code &amp; Concept
-                </span>
-              </div>
+              {company && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-300">
+                  <Building2 className="w-4 h-4 text-cyan-400" /> Target Company: {company}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Evaluation Rubrics Info */}
+          {/* Adaptive AI Evaluation Model */}
           <div className="glass-card rounded-3xl p-6 border border-slate-200/80 dark:border-white/10 space-y-3">
             <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-600 dark:text-cyan-400 flex items-center gap-2">
-              <Cpu className="w-4 h-4" /> AI Evaluation Criteria
+              <Zap className="w-4 h-4" /> Adaptive Decision Flow
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300">
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5">
-                <span className="font-bold text-slate-900 dark:text-white block mb-0.5">1. Accuracy &amp; Logic</span>
-                Correct algorithm implementation and conceptual clarity.
+                <span className="font-bold text-emerald-400 block mb-1">Score ≥ 80%</span>
+                AI escalates difficulty to Advanced and asks deeper architectural challenges.
               </div>
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5">
-                <span className="font-bold text-slate-900 dark:text-white block mb-0.5">2. Edge Cases</span>
-                Handling boundary conditions, error handling, and null checks.
+                <span className="font-bold text-cyan-400 block mb-1">Score 60–79%</span>
+                AI maintains level and probes with context-aware follow-up questions.
               </div>
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5">
-                <span className="font-bold text-slate-900 dark:text-white block mb-0.5">3. Efficiency</span>
-                Time (Big-O) and Space complexity optimization.
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5">
-                <span className="font-bold text-slate-900 dark:text-white block mb-0.5">4. Code Cleanliness</span>
-                Modular structure, readable naming, and best practices.
+                <span className="font-bold text-amber-400 block mb-1">Score &lt; 60%</span>
+                AI identifies weakness, simplifies concepts, and tests fundamentals.
               </div>
             </div>
           </div>
@@ -148,32 +179,32 @@ const Interview = ({ params }) => {
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Interactive Coding Workspace
+                  Interactive Interview Room
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  No video or mic needed. You can switch between code and structured text answers, submit for instant AI analysis, and inspect side-by-side ideal solutions.
+                  Support for Voice input (speech recognition + filler word analysis), Code Editor, or Markdown notes.
                 </p>
               </div>
 
               <div className="space-y-2.5 pt-2 border-t border-slate-200/60 dark:border-white/10 text-xs">
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-500 shrink-0" />
-                  <span>Support for JavaScript, Python, TypeScript, Java, C++, SQL, &amp; Text</span>
+                  <Mic className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>Voice STT + Live filler words &amp; speaking pace tracking</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-500 shrink-0" />
-                  <span>Real-time Gemini scoring out of 10 with granular improvement tips</span>
+                  <Code2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span>Code Editor with JS, Python, Java, C++, TypeScript, Go &amp; SQL</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-500 shrink-0" />
-                  <span>Self-paced progression with question selector navigation</span>
+                  <MessageSquare className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>TTS speech synthesis for listening to interviewer questions</span>
                 </div>
               </div>
             </div>
 
             <div className="pt-4 border-t border-slate-200/60 dark:border-white/10">
               <Link
-                href={"/dashboard/interview/" + params.interviewId + "/start"}
+                href={`/dashboard/interview/${params.interviewId}/start`}
                 className="block w-full"
               >
                 <Button className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-black text-sm shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center gap-2 py-6">
