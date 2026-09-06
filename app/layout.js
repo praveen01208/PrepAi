@@ -19,6 +19,10 @@ export const metadata = {
 
 
 export default function RootLayout({ children }) {
+  const publishableKey =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    "pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk";
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
@@ -28,7 +32,7 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={`${font.className} bg-slate-950 text-slate-100 min-h-screen antialiased`} suppressHydrationWarning>
-        <ClerkProvider>
+        <ClerkProvider publishableKey={publishableKey}>
           <Toaster />
           <ThemeProvider
             attribute="class"
@@ -43,3 +47,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
