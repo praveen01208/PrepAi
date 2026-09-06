@@ -37,12 +37,14 @@ const QuestionSection = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const defaultQuestionText = `Walk me through your architectural approach to designing a scalable, fault-tolerant service for a ${targetRole} role. How do you handle caching, database optimization, and high concurrency?`;
+
   const currentQuestion = mockInterviewQuestion[activeQuestionIndex] || {
-    questionText: "Loading next adaptive challenge...",
-    Question: "Loading next adaptive challenge..."
+    questionText: defaultQuestionText,
+    Question: defaultQuestionText
   };
 
-  const questionContent = currentQuestion.questionText || currentQuestion.Question || "";
+  const questionContent = currentQuestion.questionText || currentQuestion.Question || defaultQuestionText;
   const questionCategory = currentQuestion.category || interviewType || "Technical";
   const questionDiff = currentQuestion.difficultyLevel || currentDifficulty || "Intermediate";
   const generatedFrom = currentQuestion.generatedFrom || "Adaptive";

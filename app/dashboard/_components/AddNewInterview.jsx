@@ -171,6 +171,16 @@ const AddNewInterview = () => {
         return;
       }
 
+      // Save initial question & session in sessionStorage for instant offline/caching resiliency
+      if (typeof window !== "undefined" && data.sessionId) {
+        try {
+          if (data.question) {
+            sessionStorage.setItem("prep_ai_init_q_" + data.sessionId, JSON.stringify(data.question));
+          }
+          sessionStorage.setItem("prep_ai_init_sess_" + data.sessionId, JSON.stringify(data));
+        } catch (_) {}
+      }
+
       setOpenDialog(false);
       toast.success("Adaptive AI session initialized!");
       router.push(`/dashboard/interview/${data.sessionId}/start`);

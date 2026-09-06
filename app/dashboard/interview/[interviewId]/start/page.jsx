@@ -37,6 +37,24 @@ const StartInterview = ({ params }) => {
   const fetchSession = async () => {
     try {
       setLoading(true);
+
+      // Check sessionStorage for cached initial question
+      let cachedQuestion = null;
+      let cachedSess = null;
+      if (typeof window !== "undefined") {
+        try {
+          const qStr = sessionStorage.getItem("prep_ai_init_q_" + params.interviewId);
+          if (qStr) cachedQuestion = JSON.parse(qStr);
+          const sStr = sessionStorage.getItem("prep_ai_init_sess_" + params.interviewId);
+          if (sStr) cachedSess = JSON.parse(sStr);
+        } catch (_) {}
+      }
+
+      if (cachedSess) {
+        setInterviewData(cachedSess);
+        setCurrentDifficulty(cachedSess.currentDifficulty || cachedSess.initialDifficulty || "Intermediate");
+      }
+
       // Try adaptive endpoint first
       const resAdaptive = await fetch(`/api/interviews/adaptive/${params.interviewId}`);
       if (resAdaptive.ok) {
@@ -47,26 +65,59 @@ const StartInterview = ({ params }) => {
           
           if (data.questions && data.questions.length > 0) {
             setQuestionsList(data.questions);
-            // set active question to last unanswered or latest
             const lastUnanswered = data.questions.findIndex(q => !q.userResponse);
             setActiveQuestionIndex(lastUnanswered >= 0 ? lastUnanswered : data.questions.length - 1);
+            setLoading(false);
+            return;
           }
-          setLoading(false);
-          return;
         }
+      }
+
+      // If cached question was found, use it
+      if (cachedQuestion) {
+        setQuestionsList([cachedQuestion]);
+        setActiveQuestionIndex(0);
+        setLoading(false);
+        return;
       }
 
       // Legacy fallback
       const resLegacy = await fetch(`/api/interviews/${params.interviewId}`);
       if (resLegacy.ok) {
         const data = await resLegacy.json();
-        const parsed = JSON.parse(data.jsonMockResp);
-        setQuestionsList(parsed);
-        setInterviewData(data);
+        if (data.jsonMockResp) {
+          const parsed = JSON.parse(data.jsonMockResp);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestionsList(parsed);
+            setInterviewData(data);
+            setLoading(false);
+            return;
+          }
+        }
       }
+
+      // Default opening question fallback
+      const defaultQ = {
+        questionText: `Walk me through the architecture and design decisions of a key production application you built. How did you structure your components, APIs, and data storage for performance and reliability?`,
+        category: "Technical",
+        difficultyLevel: "Intermediate",
+        generatedFrom: "Initial",
+        idealAnswer: "Cover high-level architecture, frontend/backend separation, caching strategies, database optimization, and structured error handling."
+      };
+      setQuestionsList([defaultQ]);
+      setActiveQuestionIndex(0);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load interview session.");
+      // Ensure UI is never stuck
+      const fallbackQ = {
+        questionText: `Explain how you diagnose and resolve performance bottlenecks, high memory consumption, and slow API endpoints in your primary tech stack.`,
+        category: "Technical",
+        difficultyLevel: "Intermediate",
+        generatedFrom: "Initial",
+        idealAnswer: "Use performance profiling, database index analysis, caching with Redis, asynchronous queues, and load testing."
+      };
+      setQuestionsList([fallbackQ]);
+      setActiveQuestionIndex(0);
     } finally {
       setLoading(false);
     }
