@@ -4,16 +4,18 @@ const {
   HarmBlockThreshold,
 } = require("@google/generative-ai");
 
-const apiKey =
-  process.env.GEMINI_API_KEY ||
-  Buffer.from("QVEuQWI4Uk42S3NQTEljOUhJZmlWNTlxWVJJaDFFSy1yS3I2NlVsQXVKZjJEblpwWFhDMWc=", "base64").toString("utf-8");
+// Strip any surrounding quotes from the env key
+const rawKey = process.env.GEMINI_API_KEY ||
+  Buffer.from("QVEuQWI4Uk42S3NQTEpjOUhJZmlWNTlxWVJJaDFFSy1yS3I2NlVsQXVKZjJEblpwWFhDMWc=", "base64").toString("utf-8");
+const apiKey = rawKey.replace(/^["']|["']$/g, "").trim();
+
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// Verified working models for this API key (in priority order)
 const CANDIDATE_MODELS = [
+  "gemini-3.6-flash",
   "gemini-flash-latest",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-pro",
+  "gemini-flash-lite-latest",
 ];
 
 const generationConfig = {
@@ -27,11 +29,11 @@ const generationConfig = {
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
   },
   {
     category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
   },
 ];
 
@@ -56,4 +58,3 @@ export const createChatSession = () => {
 };
 
 export const chatSession = createChatSession();
-

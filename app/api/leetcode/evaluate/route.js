@@ -5,10 +5,12 @@ import { createChatSession } from "@/utils/GeminiAIModal";
 // POST /api/leetcode/evaluate — evaluates DSA code submissions
 export async function POST(request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Auth is optional — allow guest evaluation
+    let userId = "guest";
+    try {
+      const authResult = await auth();
+      if (authResult?.userId) userId = authResult.userId;
+    } catch (_) {}
 
     const body = await request.json();
     const { problemTitle, problemDesc, language, userCode, constraints } = body;
