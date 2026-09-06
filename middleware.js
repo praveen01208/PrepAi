@@ -6,12 +6,6 @@ const isProtectedRoute = createRouteMatcher([
   '/forum(.*)'
 ]);
 
-const clerkHandler = clerkMiddleware((auth, req) => {
-  if (isProtectedRoute(req)) {
-    auth().protect();
-  }
-});
-
 export default function middleware(req, evt) {
   const pathname = req.nextUrl.pathname;
 
@@ -24,18 +18,23 @@ export default function middleware(req, evt) {
     return NextResponse.next();
   }
 
-  // If Clerk keys are missing in the Vercel deployment environment, bypass auth gracefully
-  const hasClerkKey = Boolean(
+  // Check if Clerk keys are present in environment
+  const publishableKey =
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-    process.env.CLERK_PUBLISHABLE_KEY
-  );
+    process.env.CLERK_PUBLISHABLE_KEY;
+  const secretKey = process.env.CLERK_SECRET_KEY;
 
-  if (!hasClerkKey) {
+  if (!publishableKey || !secretKey) {
+    // If Clerk keys are missing on Vercel, bypass authentication gracefully
     return NextResponse.next();
   }
 
   try {
-    return clerkHandler(req, evt);
+    return clerkMiddleware((auth, request) => {
+      if (isProtectedRoute(request)) {
+        auth().protect();
+      }
+    })(req, evt);
   } catch (err) {
     console.error("Clerk middleware invocation error:", err);
     return NextResponse.next();
@@ -48,4 +47,5 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 };
+
 
