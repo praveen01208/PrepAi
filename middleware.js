@@ -18,23 +18,24 @@ export default function middleware(req, evt) {
     return NextResponse.next();
   }
 
-  // Check if Clerk keys are present in environment
+  // Check if Clerk keys are present in environment or fallback to project configuration
   const publishableKey =
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-    process.env.CLERK_PUBLISHABLE_KEY;
-  const secretKey = process.env.CLERK_SECRET_KEY;
-
-  if (!publishableKey || !secretKey) {
-    // If Clerk keys are missing on Vercel, bypass authentication gracefully
-    return NextResponse.next();
-  }
+    process.env.CLERK_PUBLISHABLE_KEY ||
+    "pk_test_c3RhYmxlLXR1bmEtODM4LmNsZXJrLmFjY291bnRzLmRldiQ";
+  const secretKey =
+    process.env.CLERK_SECRET_KEY ||
+    "sk_test_03PBkjsBGaJAQzrmW2pUxcCuF2hsRC4zDBR78krVvO";
 
   try {
-    return clerkMiddleware((auth, request) => {
-      if (isProtectedRoute(request)) {
-        auth().protect();
-      }
-    })(req, evt);
+    return clerkMiddleware(
+      (auth, request) => {
+        if (isProtectedRoute(request)) {
+          auth().protect();
+        }
+      },
+      { publishableKey, secretKey }
+    )(req, evt);
   } catch (err) {
     console.error("Clerk middleware invocation error:", err);
     return NextResponse.next();

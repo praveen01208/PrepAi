@@ -32,9 +32,9 @@ const Header = () => {
   ];
 
   return (
-    <div className="sticky top-4 z-50 w-full px-4 sm:px-6 pointer-events-none flex justify-center">
-      <header className="pointer-events-auto max-w-5xl w-full dynamic-island rounded-full px-4 sm:px-6 py-2.5 transition-all duration-300">
-        <div className="flex items-center justify-between">
+    <div className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 pointer-events-none flex justify-center">
+      <header className="pointer-events-auto max-w-5xl w-full dynamic-island rounded-2xl sm:rounded-full px-3.5 sm:px-6 py-2.5 transition-all duration-300">
+        <div className="flex items-center justify-between gap-2">
           {/* Brand Logo - Dynamic Island Capsule */}
           <Link href="/dashboard" className="flex items-center gap-2.5 group shrink-0">
             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/30 group-hover:scale-105 group-hover:shadow-cyan-400/40 transition-all">

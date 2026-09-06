@@ -29,6 +29,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 
 export default function LandingPage() {
   const [activeRole, setActiveRole] = useState("Algorithms");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const sampleQuestions = {
     Algorithms: [
@@ -114,28 +115,28 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/20 selection:text-cyan-400 relative overflow-hidden">
-      {/* 3D Visual Background Image - Prominent & Crisp */}
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/20 selection:text-cyan-400 relative overflow-x-hidden">
+      {/* 3D Visual Background Image */}
       <div
-        className="absolute inset-0 bg-cover bg-top bg-no-repeat opacity-60 dark:opacity-40 pointer-events-none scale-100 transition-all duration-700"
+        className="absolute inset-0 bg-cover bg-top bg-no-repeat opacity-40 dark:opacity-30 pointer-events-none scale-100 transition-all duration-700"
         style={{ backgroundImage: "url('/landing-bg.png')" }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-[#090d16]/70 to-[#090d16] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-[#090d16]/80 to-[#090d16] pointer-events-none" />
 
       {/* Background Ambient Glow Orbs */}
-      <div className="ambient-glow bg-cyan-500/25 w-[550px] h-[550px] -top-40 -left-40" />
-      <div className="ambient-glow bg-indigo-500/25 w-[600px] h-[600px] top-1/4 -right-40" />
-      <div className="ambient-glow bg-purple-500/20 w-[650px] h-[650px] -bottom-40 left-1/3" />
+      <div className="ambient-glow bg-cyan-500/20 w-72 sm:w-[550px] h-72 sm:h-[550px] -top-20 -left-20" />
+      <div className="ambient-glow bg-indigo-500/20 w-72 sm:w-[600px] h-72 sm:h-[600px] top-1/4 -right-20" />
+      <div className="ambient-glow bg-purple-500/15 w-72 sm:w-[650px] h-72 sm:h-[650px] -bottom-20 left-1/3" />
 
       {/* Cyber Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
       {/* Dynamic Island Floating Header */}
-      <div className="sticky top-4 z-50 w-full px-4 sm:px-6 pointer-events-none flex justify-center">
-        <header className="pointer-events-auto max-w-5xl w-full dynamic-island rounded-full px-4 sm:px-6 py-2.5 transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/30 group-hover:scale-105 group-hover:shadow-cyan-400/40 transition-all">
+      <div className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 pointer-events-none flex justify-center">
+        <header className="pointer-events-auto max-w-5xl w-full dynamic-island rounded-2xl sm:rounded-full px-3.5 sm:px-6 py-2.5 transition-all duration-300">
+          <div className="flex items-center justify-between gap-2">
+            <Link href="/" className="flex items-center gap-2 group shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/30 group-hover:scale-105 transition-all">
                 <Bot className="w-4 h-4" />
               </div>
               <div className="flex items-center gap-1.5">
@@ -146,6 +147,7 @@ export default function LandingPage() {
               </div>
             </Link>
 
+            {/* Center Navigation Pills (Desktop) */}
             <nav className="hidden md:flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border border-black/5 dark:border-white/10 backdrop-blur-md">
               <Link href="/dashboard/leetcode" className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 transition">
                 LeetCode Arena
@@ -161,87 +163,165 @@ export default function LandingPage() {
               </a>
             </nav>
 
-            <div className="flex items-center gap-2.5 shrink-0">
+            {/* Right Action Capsule */}
+            <div className="flex items-center gap-2 shrink-0">
               <ModeToggle />
+              
               <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="text-xs font-bold px-3.5 py-1.5 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-cyan-400 transition">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md shadow-indigo-500/20 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition">
-                    Get Started Free
-                  </button>
-                </SignUpButton>
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <SignInButton mode="modal">
+                    <button className="text-xs font-bold px-3 py-1.5 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-cyan-400 transition">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md shadow-indigo-500/20 hover:opacity-90 transition">
+                      Get Started
+                    </button>
+                  </SignUpButton>
+                </div>
               </SignedOut>
+
               <SignedIn>
                 <Link
                   href="/dashboard"
-                  className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-1.5"
+                  className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md shadow-indigo-500/20 hover:scale-[1.02] transition flex items-center gap-1"
                 >
-                  Launch Studio
+                  <span className="hidden sm:inline">Launch</span> Studio
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
+
+              {/* Mobile Hamburger Button */}
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-1.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 transition"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <div className="w-5 h-5 flex items-center justify-center font-bold text-xs">✕</div>
+                ) : (
+                  <div className="w-5 h-5 flex flex-col justify-center items-center gap-1">
+                    <span className="w-4 h-0.5 bg-current rounded-full" />
+                    <span className="w-4 h-0.5 bg-current rounded-full" />
+                    <span className="w-4 h-0.5 bg-current rounded-full" />
+                  </div>
+                )}
+              </button>
             </div>
           </div>
+
+          {/* Dynamic Island Expandable Mobile Tray */}
+          {mobileMenuOpen && (
+            <div className="md:hidden mt-3 pt-3 border-t border-slate-200/60 dark:border-white/10 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/dashboard/leetcode"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-white/10 glass-card"
+                >
+                  <Code2 className="w-4 h-4 text-cyan-400" />
+                  <span>LeetCode Arena</span>
+                </Link>
+                <Link
+                  href="/dashboard/courses"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-white/10 glass-card"
+                >
+                  <Layers className="w-4 h-4 text-emerald-400" />
+                  <span>Courses &amp; Tracks</span>
+                </Link>
+                <a
+                  href="#demo"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-white/10 glass-card"
+                >
+                  <PlayCircle className="w-4 h-4 text-amber-400" />
+                  <span>Challenges</span>
+                </a>
+                <a
+                  href="#features"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-white/10 glass-card"
+                >
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <span>Features</span>
+                </a>
+              </div>
+
+              <SignedOut>
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/40 dark:border-white/5">
+                  <SignInButton mode="modal">
+                    <button className="w-full py-2 rounded-xl text-xs font-bold glass-card text-slate-700 dark:text-slate-200">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md">
+                      Get Started
+                    </button>
+                  </SignUpButton>
+                </div>
+              </SignedOut>
+            </div>
+          )}
         </header>
       </div>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-12 sm:pt-20 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <section className="relative z-10 pt-8 sm:pt-20 pb-12 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           {/* Left Column: Headline & Action */}
-          <div className="lg:col-span-7 text-center lg:text-left space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-bold text-indigo-600 dark:text-cyan-400 border border-indigo-500/20 dark:border-cyan-500/20 shadow-sm animate-float">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span>AI-Driven Technical &amp; Coding Assessment Studio</span>
+          <div className="lg:col-span-7 text-center lg:text-left space-y-5 sm:space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-panel text-[11px] sm:text-xs font-bold text-indigo-600 dark:text-cyan-400 border border-indigo-500/20 dark:border-cyan-500/20 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>AI-Driven Technical Assessment Studio</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-6xl font-black tracking-tight leading-[1.1] text-slate-900 dark:text-white">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-slate-900 dark:text-white break-words">
               Ace Technical Interviews With <span className="text-gradient">PREP-AI</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto lg:mx-0">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto lg:mx-0">
               Generate custom coding challenges and architectural questions for your target stack. Type code or written solutions directly in the studio for instant Big-O analysis, feedback, and scoring.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
               <Link
                 href="/dashboard"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-black text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-3 group"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-black text-sm shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2.5 group"
               >
                 <span>Start Practice Session</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
                 href="#demo"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl glass-card font-bold text-sm sm:text-base hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300/80 dark:border-white/10 transition flex items-center justify-center gap-2 text-slate-700 dark:text-slate-200"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl glass-card font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300/80 dark:border-white/10 transition flex items-center justify-center gap-2 text-slate-700 dark:text-slate-200"
               >
-                <PlayCircle className="w-5 h-5 text-cyan-400" />
+                <PlayCircle className="w-4 h-4 text-cyan-400" />
                 <span>Explore Challenges</span>
               </a>
             </div>
 
             {/* Social Proof Stats */}
-            <div className="pt-6 border-t border-slate-200/60 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <span className="text-2xl font-black text-indigo-600 dark:text-cyan-400">10,000+</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-semibold uppercase">Sessions Solved</span>
+            <div className="pt-5 border-t border-slate-200/60 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="p-2.5 rounded-xl glass-card text-center sm:text-left">
+                <span className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-cyan-400 block">10,000+</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Sessions Solved</span>
               </div>
-              <div>
-                <span className="text-2xl font-black text-indigo-600 dark:text-cyan-400">100%</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-semibold uppercase">No WebCam Needed</span>
+              <div className="p-2.5 rounded-xl glass-card text-center sm:text-left">
+                <span className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-cyan-400 block">100%</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Zero Camera</span>
               </div>
-              <div>
-                <span className="text-2xl font-black text-indigo-600 dark:text-cyan-400">8+</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-semibold uppercase">Languages</span>
+              <div className="p-2.5 rounded-xl glass-card text-center sm:text-left">
+                <span className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-cyan-400 block">8+</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Languages</span>
               </div>
-              <div>
-                <span className="text-2xl font-black text-indigo-600 dark:text-cyan-400">&lt; 1.5s</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-semibold uppercase">Instant Feedback</span>
+              <div className="p-2.5 rounded-xl glass-card text-center sm:text-left">
+                <span className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-cyan-400 block">&lt; 1.5s</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Fast Feedback</span>
               </div>
             </div>
           </div>
@@ -274,84 +354,88 @@ export default function LandingPage() {
         </div>
 
         {/* Hero Interactive Code Evaluation Mockup Preview */}
-        <div className="mt-16 relative max-w-5xl mx-auto">
+        <div className="mt-12 sm:mt-16 relative max-w-5xl mx-auto">
           <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 rounded-3xl blur-2xl opacity-25" />
-          <div className="relative glass-panel rounded-3xl border border-white/50 dark:border-white/10 p-5 sm:p-8 shadow-2xl overflow-hidden">
+          <div className="relative glass-panel rounded-3xl border border-white/50 dark:border-white/10 p-4 sm:p-8 shadow-2xl overflow-hidden">
             {/* Terminal Topbar */}
-            <div className="flex items-center justify-between pb-5 border-b border-slate-200/60 dark:border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-amber-400" />
-                <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                <span className="text-xs font-mono text-slate-400 ml-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-4 border-b border-slate-200/60 dark:border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-mono text-slate-400">
                   prep_session_01 • TypeScript Solution
                 </span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20">
-                <Cpu className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px] sm:text-xs font-bold border border-cyan-500/20 self-start sm:self-auto">
+                <Cpu className="w-3 h-3" />
                 PREP-AI Engine Active
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-5">
               {/* Code Workspace Side */}
-              <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+              <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
                 <div>
-                  <div className="inline-block px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-cyan-400 text-xs font-bold uppercase tracking-wider mb-3 border border-indigo-500/20">
+                  <div className="inline-block px-2.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-cyan-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 border border-indigo-500/20">
                     Challenge #03 • LRU Cache
                   </div>
-                  <h3 className="text-lg font-bold leading-snug text-slate-900 dark:text-white">
+                  <h3 className="text-sm sm:text-base font-bold leading-snug text-slate-900 dark:text-white">
                     Implement an LRU Cache with O(1) time complexity for both get() and put() operations.
                   </h3>
                 </div>
 
                 {/* Code Block */}
-                <div className="rounded-2xl glass-terminal p-4 font-mono text-xs text-slate-200 space-y-1 overflow-x-auto">
+                <div className="rounded-xl glass-terminal p-3 sm:p-4 font-mono text-[11px] sm:text-xs text-slate-200 space-y-1 overflow-x-auto">
                   <p className="text-slate-500">// Candidate Implementation</p>
                   <p><span className="text-purple-400">class</span> <span className="text-yellow-300">LRUCache</span> &#123;</p>
-                  <p className="pl-4"><span className="text-blue-400">private</span> map = <span className="text-purple-400">new</span> <span className="text-yellow-300">Map</span>();</p>
-                  <p className="pl-4"><span className="text-blue-400">constructor</span>(<span className="text-blue-400">private</span> capacity: <span className="text-cyan-400">number</span>) &#123;&#125;</p>
-                  <p className="pl-4"><span className="text-green-400">get</span>(key: <span className="text-cyan-400">number</span>) &#123;</p>
-                  <p className="pl-8"><span className="text-purple-400">if</span> (!<span className="text-blue-400">this</span>.map.has(key)) <span className="text-purple-400">return</span> -1;</p>
-                  <p className="pl-8"><span className="text-blue-400">const</span> val = <span className="text-blue-400">this</span>.map.get(key);</p>
-                  <p className="pl-8"><span className="text-blue-400">this</span>.map.delete(key); <span className="text-blue-400">this</span>.map.set(key, val);</p>
-                  <p className="pl-8"><span className="text-purple-400">return</span> val;</p>
-                  <p className="pl-4">&#125;</p>
+                  <p className="pl-3 sm:pl-4"><span className="text-blue-400">private</span> map = <span className="text-purple-400">new</span> <span className="text-yellow-300">Map</span>();</p>
+                  <p className="pl-3 sm:pl-4"><span className="text-blue-400">constructor</span>(<span className="text-blue-400">private</span> capacity: <span className="text-cyan-400">number</span>) &#123;&#125;</p>
+                  <p className="pl-3 sm:pl-4"><span className="text-green-400">get</span>(key: <span className="text-cyan-400">number</span>) &#123;</p>
+                  <p className="pl-6 sm:pl-8"><span className="text-purple-400">if</span> (!<span className="text-blue-400">this</span>.map.has(key)) <span className="text-purple-400">return</span> -1;</p>
+                  <p className="pl-6 sm:pl-8"><span className="text-blue-400">const</span> val = <span className="text-blue-400">this</span>.map.get(key);</p>
+                  <p className="pl-6 sm:pl-8"><span className="text-blue-400">this</span>.map.delete(key); <span className="text-blue-400">this</span>.map.set(key, val);</p>
+                  <p className="pl-6 sm:pl-8"><span className="text-purple-400">return</span> val;</p>
+                  <p className="pl-3 sm:pl-4">&#125;</p>
                   <p>&#125;</p>
                 </div>
               </div>
 
               {/* Feedback Side */}
-              <div className="lg:col-span-5 p-5 rounded-2xl glass-card border border-indigo-500/30 dark:border-cyan-500/20 flex flex-col justify-between">
+              <div className="lg:col-span-5 p-4 sm:p-5 rounded-2xl glass-card border border-indigo-500/30 dark:border-cyan-500/20 flex flex-col justify-between space-y-4">
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase text-indigo-600 dark:text-cyan-400">
                       PREP-AI Analysis
                     </span>
-                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
                       Rating: 9.5 / 10
                     </span>
                   </div>
 
-                  <div className="mt-4 space-y-2.5 text-xs">
+                  <div className="mt-3 space-y-2 text-xs">
                     <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Optimal Complexity:</strong> JavaScript Map preserves insertion order, guaranteeing genuine O(1) operations.</span>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                      <span><strong>Optimal Complexity:</strong> Map preserves insertion order with genuine O(1) ops.</span>
                     </div>
                     <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                       <span><strong>Edge Cases:</strong> Correctly handles key re-insertion and deletion order on read.</span>
                     </div>
                     <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
-                      <Zap className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                      <span><strong>Pro-Tip:</strong> In generic languages (C++/Java), pair a Doubly Linked List with a Hash Table.</span>
+                      <Zap className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                      <span><strong>Pro-Tip:</strong> In C++/Java, pair a Doubly Linked List with a Hash Table.</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-200/60 dark:border-white/10 flex justify-between items-center text-xs">
+                <div className="pt-3 border-t border-slate-200/60 dark:border-white/10 flex justify-between items-center text-xs">
                   <span className="text-slate-400">Status: Verified</span>
-                  <span className="font-bold text-indigo-600 dark:text-cyan-400">Next Challenge →</span>
+                  <Link href="/dashboard" className="font-bold text-indigo-600 dark:text-cyan-400 hover:underline">
+                    Next Challenge →
+                  </Link>
                 </div>
               </div>
             </div>
@@ -360,26 +444,26 @@ export default function LandingPage() {
       </section>
 
       {/* Interactive Role Showcase */}
-      <section id="demo" className="py-20 px-4 sm:px-6 max-w-7xl mx-auto relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-12">
+      <section id="demo" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
           <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 mb-2">
             PREP-AI CHALLENGE SUITE
           </h2>
-          <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
+          <h3 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">
             Tailored Technical Challenges by Discipline
           </h3>
-          <p className="text-slate-600 dark:text-slate-300 mt-3 text-sm sm:text-base">
+          <p className="text-slate-600 dark:text-slate-300 mt-2 text-xs sm:text-sm">
             Explore sample challenges synthesized by PREP-AI for software engineering candidates.
           </p>
         </div>
 
         {/* Role Chips */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 sm:flex-wrap sm:justify-center mb-8">
           {Object.keys(sampleQuestions).map((role) => (
             <button
               key={role}
               onClick={() => setActiveRole(role)}
-              className={`px-5 py-2 rounded-2xl font-bold text-xs transition-all ${
+              className={`px-4 py-2 rounded-xl sm:rounded-2xl font-bold text-xs whitespace-nowrap transition-all ${
                 activeRole === role
                   ? "bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 scale-105"
                   : "glass-card hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10"
@@ -391,22 +475,22 @@ export default function LandingPage() {
         </div>
 
         {/* Question Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {sampleQuestions[activeRole].map((q, idx) => (
             <div
               key={idx}
-              className="glass-card rounded-3xl p-6 flex flex-col justify-between relative group border border-slate-200/80 dark:border-white/10"
+              className="glass-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between relative group border border-slate-200/80 dark:border-white/10"
             >
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-cyan-400 flex items-center justify-center font-bold text-xs border border-indigo-500/20">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-7 h-7 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-cyan-400 flex items-center justify-center font-bold text-xs border border-indigo-500/20">
                     0{idx + 1}
                   </div>
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-300">
+                  <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-300">
                     {q.lang} • {q.diff}
                   </span>
                 </div>
-                <h4 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug mb-2">
+                <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-snug mb-2">
                   {q.title}
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -414,8 +498,8 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-xs">
-                <span className="text-slate-400">PREP-AI Ready</span>
+              <div className="mt-5 pt-3 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-xs">
+                <span className="text-slate-400 text-[11px]">PREP-AI Ready</span>
                 <Link
                   href="/dashboard"
                   className="font-bold text-indigo-600 dark:text-cyan-400 group-hover:translate-x-1 transition-transform flex items-center gap-1"
@@ -429,60 +513,59 @@ export default function LandingPage() {
       </section>
 
       {/* Features Bento Grid */}
-      <section id="features" className="py-20 px-4 sm:px-6 max-w-7xl mx-auto relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+      <section id="features" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
           <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 mb-2">
             CORE CAPABILITIES
           </h2>
-          <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
+          <h3 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">
             Built for Elite Software Engineers
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass-card rounded-3xl p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-cyan-400 flex items-center justify-center mb-6">
-                <Code2 className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-cyan-400 flex items-center justify-center mb-5">
+                <Code2 className="w-5 h-5" />
               </div>
-              <h4 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">Live Code Workspace</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Live Code Workspace</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Type code solutions in JavaScript, Python, TypeScript, Java, C++, or Go. Clean terminal theme with tab indentation and shortcut execution.
               </p>
             </div>
           </div>
 
-          <div className="glass-card rounded-3xl p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
+          <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-6">
-                <Cpu className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-5">
+                <Cpu className="w-5 h-5" />
               </div>
-              <h4 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">Gemini AI Code Evaluator</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Gemini AI Code Evaluator</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Instant evaluation of algorithmic logic, Big-O time/space complexity, boundary edge cases, and code style.
               </p>
             </div>
           </div>
 
-          <div className="glass-card rounded-3xl p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
+          <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6">
-                <Zap className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-5">
+                <Zap className="w-5 h-5" />
               </div>
-              <h4 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">Zero Camera / Audio Stress</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Zero Camera / Audio Stress</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Focus 100% on problem solving and writing clean, scalable code without intrusive webcam or microphone barriers.
               </p>
             </div>
           </div>
 
-          {/* New 3 Cards */}
-          <div className="glass-card rounded-3xl p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10 group">
+          <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10 group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-6">
-                <Terminal className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5">
+                <Terminal className="w-5 h-5" />
               </div>
-              <h4 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">LeetCode-Style Problem Arena</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">LeetCode-Style Problem Arena</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Curated Blind 75 and Top 150 questions with acceptance metrics, custom test cases, and AI Automated Judge.
               </p>
@@ -492,12 +575,12 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="glass-card rounded-3xl p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10 group">
+          <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10 group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-6">
-                <Layers className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-5">
+                <Layers className="w-5 h-5" />
               </div>
-              <h4 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">College &amp; Placement Playbooks</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Placement Playbooks</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Integrated YouTube tracks (Striver SDE Sheet, Gaurav Sen System Design, Gate Smashers, Web Dev Cohort) with interactive progress checklists.
               </p>
@@ -507,49 +590,51 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="glass-card rounded-3xl p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10 group">
+          <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between border border-slate-200/80 dark:border-white/10 group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-6">
-                <Sparkles className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-5">
+                <Sparkles className="w-5 h-5" />
               </div>
-              <h4 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">Apple-Inspired Liquid Glass UI</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Apple Liquid Glass UI</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Floating Dynamic Island navbars, frosted backdrop blur, and responsive mobile-ready layout engineered for sleek developer UX.
               </p>
             </div>
-            <span className="mt-4 text-xs font-bold text-cyan-400 flex items-center gap-1">
-              Ultra-Clean Architecture &bull; Fast &amp; Fluid
+            <span className="mt-4 text-[11px] sm:text-xs font-bold text-cyan-400 flex items-center gap-1">
+              Fast &amp; Fluid • Mobile First
             </span>
           </div>
         </div>
       </section>
 
       {/* CTA Footer Banner */}
-      <section className="py-20 px-4 sm:px-6 max-w-7xl mx-auto relative z-10">
-        <div className="relative overflow-hidden rounded-3xl glass-panel p-10 sm:p-16 text-center border border-white/40 dark:border-white/10 shadow-2xl">
-          <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-            <h3 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto relative z-10">
+        <div className="relative overflow-hidden rounded-3xl glass-panel p-8 sm:p-14 text-center border border-white/40 dark:border-white/10 shadow-2xl">
+          <div className="relative z-10 max-w-3xl mx-auto space-y-5">
+            <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
               Ready to Accelerate Your Technical Prep?
             </h3>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
+            <p className="text-xs sm:text-base text-slate-600 dark:text-slate-300 max-w-xl mx-auto">
               Join thousands of developers mastering algorithms, system design, and frontend architecture with PREP-AI.
             </p>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-black text-base shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 transition"
-            >
-              <span>Launch PREP-AI Free</span>
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            <div className="pt-2">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-black text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-105 active:scale-95 transition"
+              >
+                <span>Launch PREP-AI Free</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-10 px-4 sm:px-6 border-t border-slate-200/60 dark:border-white/10 text-center text-xs text-slate-500 dark:text-slate-400">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-cyan-400" />
+      <footer className="py-8 px-4 sm:px-6 border-t border-slate-200/60 dark:border-white/10 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center justify-center gap-2">
+            <Bot className="w-4 h-4 text-cyan-400" />
             <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-wider">PREP-AI</span>
           </div>
           <p>© {new Date().getFullYear()} PREP-AI Engineering Studio. Built with Next.js &amp; Gemini AI.</p>
