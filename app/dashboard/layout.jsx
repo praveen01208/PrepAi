@@ -15,7 +15,7 @@ const DashboardLayout = ({ children }) => {
     pathname === "/dashboard/game";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 relative selection:bg-cyan-500/20 selection:text-cyan-400 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 relative selection:bg-cyan-500/20 selection:text-cyan-400 w-full">
       <Toaster richColors position="top-right" />
       
       {/* Ambient Mesh Glows */}

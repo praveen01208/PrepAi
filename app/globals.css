@@ -70,8 +70,20 @@
   * {
     @apply border-border;
   }
+  html {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+  }
   body {
     @apply bg-background text-foreground antialiased selection:bg-cyan-500/25 selection:text-cyan-300 font-sans;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    min-height: 100%;
+    width: 100%;
   }
 }
 

@@ -115,7 +115,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/20 selection:text-cyan-400 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/20 selection:text-cyan-400 relative w-full">
       {/* 3D Visual Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-top bg-no-repeat opacity-40 dark:opacity-30 pointer-events-none scale-100 transition-all duration-700"
