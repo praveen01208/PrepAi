@@ -9,14 +9,21 @@ import { v4 as uuidv4 } from "uuid";
 // POST /api/interviews — generate questions via Gemini and save interview
 export async function POST(request) {
   try {
-    const { userId } = await auth();
-    const user = await currentUser();
-    if (!userId || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    let userId = "guest_user";
+    let userEmail = "candidate@prep-ai.com";
+    try {
+      const authResult = await auth();
+      if (authResult?.userId) userId = authResult.userId;
+      const user = await currentUser();
+      if (user?.primaryEmailAddress?.emailAddress) {
+        userEmail = user.primaryEmailAddress.emailAddress;
+      }
+    } catch (authErr) {
+      console.warn("[POST /api/interviews] Auth check bypassed for practice session:", authErr?.message);
     }
 
-    // Rate limit: 5 new interviews per minute per user
-    const rl = rateLimit(`create-interview:${userId}`, { limit: 5, windowMs: 60_000 });
+    // Rate limit: 10 new interviews per minute per user
+    const rl = rateLimit(`create-interview:${userId}`, { limit: 10, windowMs: 60_000 });
     if (!rl.success) {
       return NextResponse.json(
         { error: "Too many requests. Please wait before creating another interview." },
@@ -112,7 +119,6 @@ Keep questions professional and relevant to the job requirements.`;
     }
 
     // Save to DB
-    const userEmail = user.primaryEmailAddress?.emailAddress ?? "candidate@prep-ai.com";
     const mockId = uuidv4();
     const createdAt = new Date().toISOString().split("T")[0];
 
