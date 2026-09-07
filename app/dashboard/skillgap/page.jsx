@@ -113,7 +113,7 @@ export default function SkillGapPage() {
         </div>
 
         {result && (
-          <Link href={`/dashboard/interview`}>
+          <Link href={`/dashboard/interview?role=${encodeURIComponent(targetRole)}`}>
             <Button className="rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs px-5 py-2.5 shadow-lg shadow-purple-500/25 flex items-center gap-2 hover:scale-105 transition">
               <BrainCircuit className="w-4 h-4" />
               <span>Practice Mock Interview for {targetRole}</span>
