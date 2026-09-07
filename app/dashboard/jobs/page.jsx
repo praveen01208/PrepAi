@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   Briefcase, ArrowLeft, Plus, Trash2, ExternalLink, Edit3, Check,
   X, Search, Filter, Calendar, Building2, MapPin, TrendingUp,
-  Clock, Star, AlertCircle, CheckCircle2, ChevronDown
+  Clock, Star, AlertCircle, CheckCircle2, ChevronDown, Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
