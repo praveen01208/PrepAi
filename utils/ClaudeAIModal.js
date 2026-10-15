@@ -24,6 +24,42 @@ const CANDIDATE_MODELS = [
   "claude-3-5-sonnet-latest",
 ];
 
+// Helper: sanitize unescaped control characters inside string literals before JSON.parse
+function sanitizeJsonString(str) {
+  let insideString = false;
+  let escaped = false;
+  let result = "";
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === "\\" && insideString) {
+      escaped = !escaped;
+      result += ch;
+    } else if (ch === '"' && !escaped) {
+      insideString = !insideString;
+      result += ch;
+    } else {
+      escaped = false;
+      if (insideString) {
+        if (ch === "\n") {
+          result += "\\n";
+        } else if (ch === "\r") {
+          result += "\\r";
+        } else if (ch === "\t") {
+          result += "\\t";
+        } else if (ch.charCodeAt(0) < 32) {
+          result += " ";
+        } else {
+          result += ch;
+        }
+      } else {
+        result += ch;
+      }
+    }
+  }
+  return result;
+}
+
 // Helper: robustly clean and parse JSON from Claude responses
 export function cleanAndParseJson(raw) {
   if (!raw || typeof raw !== "string") {
@@ -59,7 +95,35 @@ export function cleanAndParseJson(raw) {
   // Remove trailing commas before closing braces or brackets
   cleaned = cleaned.replace(/,\s*([\]}])/g, "$1");
 
-  return JSON.parse(cleaned);
+  try {
+    return JSON.parse(cleaned);
+  } catch (errPrimary) {
+    try {
+      const sanitized = sanitizeJsonString(cleaned);
+      return JSON.parse(sanitized);
+    } catch (errSanitized) {
+      // Last-ditch: attempt regex key-value extraction for structured response
+      const extracted = {};
+      const pairs = [
+        "verdict",
+        "score",
+        "passedCases",
+        "timeComplexity",
+        "spaceComplexity",
+        "runtimeMs",
+        "memoryMb",
+        "feedback",
+      ];
+      for (const key of pairs) {
+        const match = cleaned.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`, "i"));
+        if (match) extracted[key] = match[1];
+      }
+      if (Object.keys(extracted).length >= 3) {
+        return extracted;
+      }
+      throw errPrimary;
+    }
+  }
 }
 
 // Helper: create a chat session compatible with existing sendMessage pattern

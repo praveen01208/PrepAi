@@ -559,6 +559,8 @@ const LeetCodeArena = () => {
                             className={`px-2.5 py-0.5 rounded-md text-xs font-black uppercase ${
                               evalResult.verdict === "Accepted"
                                 ? "bg-emerald-500/20 text-emerald-400"
+                                : evalResult.verdict === "Evaluation Incomplete"
+                                ? "bg-amber-500/20 text-amber-400"
                                 : "bg-rose-500/20 text-rose-400"
                             }`}
                           >
