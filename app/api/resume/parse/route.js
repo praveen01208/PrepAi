@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PDFParse } from "pdf-parse";
+import { extractTextFromPdfBuffer } from "@/utils/ClaudeAIModal";
 import mammoth from "mammoth";
 
 export const maxDuration = 60;
@@ -22,11 +22,7 @@ export async function POST(request) {
     let extractedText = "";
 
     if (lowerName.endsWith(".pdf")) {
-      const parser = new PDFParse({ data: buffer });
-      const result = await parser.getText();
-      extractedText = result?.text || "";
-      // Remove page division markers like "-- 1 of 2 --"
-      extractedText = extractedText.replace(/--\s*\d+\s+of\s+\d+\s*--/gi, "").trim();
+      extractedText = await extractTextFromPdfBuffer(buffer);
     } else if (lowerName.endsWith(".docx")) {
       const result = await mammoth.extractRawText({ buffer });
       extractedText = result?.value || "";

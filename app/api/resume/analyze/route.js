@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { ResumeProfile } from "@/utils/schema";
-import { createChatSession, cleanAndParseJson } from "@/utils/ClaudeAIModal";
-import { PDFParse } from "pdf-parse";
+import { createChatSession, cleanAndParseJson, extractTextFromPdfBuffer } from "@/utils/ClaudeAIModal";
 
 export const maxDuration = 60;
 
@@ -33,10 +32,9 @@ export async function POST(request) {
     // Auto-detect and extract if raw PDF binary/bytecode was passed in resumeText
     if (resumeText.trim().startsWith("%PDF")) {
       try {
-        const parser = new PDFParse({ data: Buffer.from(resumeText, "binary") });
-        const pdfResult = await parser.getText();
-        if (pdfResult?.text && pdfResult.text.trim().length > 20) {
-          resumeText = pdfResult.text.replace(/--\s*\d+\s+of\s+\d+\s*--/gi, "").trim();
+        const extracted = await extractTextFromPdfBuffer(Buffer.from(resumeText, "binary"));
+        if (extracted && extracted.trim().length > 20) {
+          resumeText = extracted.trim();
         }
       } catch (pdfErr) {
         console.warn("[POST /api/resume/analyze] Raw PDF extraction attempt:", pdfErr.message);

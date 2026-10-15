@@ -167,4 +167,54 @@ export const createChatSession = () => {
 };
 
 export const chatSession = createChatSession();
+
+// Helper: extract raw text from PDF buffer using Claude native Document API
+export async function extractTextFromPdfBuffer(pdfBuffer) {
+  const base64Data = Buffer.isBuffer(pdfBuffer)
+    ? pdfBuffer.toString("base64")
+    : Buffer.from(pdfBuffer).toString("base64");
+
+  let lastError;
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const response = await anthropic.messages.create({
+        model: modelName,
+        max_tokens: 4096,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "document",
+                source: {
+                  type: "base64",
+                  media_type: "application/pdf",
+                  data: base64Data,
+                },
+              },
+              {
+                type: "text",
+                text: "Extract and return all the raw text from this resume or document accurately. Preserve all section headers (Education, Experience, Skills, Projects, Certifications), bullet points, technologies, dates, and contact details. Do not summarize or add markdown commentary, return only the extracted text.",
+              },
+            ],
+          },
+        ],
+      });
+
+      const extracted = response.content
+        .filter((block) => block.type === "text")
+        .map((block) => block.text)
+        .join("")
+        .trim();
+
+      if (extracted.length > 0) return extracted;
+    } catch (err) {
+      console.warn(`[ClaudeAI extractTextFromPdfBuffer] Model ${modelName} failed:`, err.message);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Failed to extract text from PDF document.");
+}
+
 export default createChatSession;
+

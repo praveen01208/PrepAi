@@ -72,7 +72,14 @@ export default function ResumeAnalyzerPage() {
           body: formData,
         });
 
-        const data = await res.json();
+        const rawText = await res.text();
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (_) {
+          throw new Error("Unable to parse document. Please paste your resume text directly.");
+        }
+
         if (!res.ok) {
           throw new Error(data.error || "Failed to extract text from document");
         }
@@ -101,6 +108,10 @@ export default function ResumeAnalyzerPage() {
       toast.error("Please paste your resume text or upload a resume file first");
       return;
     }
+    if (resumeText.trim().length < 25) {
+      toast.error("Please paste your full resume content (experience, projects, skills) or upload a PDF/DOCX file.");
+      return;
+    }
     setLoading(true);
     setResult(null);
     try {
@@ -113,8 +124,16 @@ export default function ResumeAnalyzerPage() {
           fileName: uploadedFileName || "resume.pdf"
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to analyze");
+
+      const rawText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (_) {
+        throw new Error("Analysis service temporarily busy. Please click Analyze again.");
+      }
+
+      if (!res.ok) throw new Error(data.error || "Failed to analyze resume");
       setResult(data);
       toast.success("Resume analysis & ATS breakdown complete!");
     } catch (e) {
