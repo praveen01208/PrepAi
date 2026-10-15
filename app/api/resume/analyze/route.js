@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { ResumeProfile } from "@/utils/schema";
-import { createChatSession } from "@/utils/ClaudeAIModal";
+import { createChatSession, cleanAndParseJson } from "@/utils/ClaudeAIModal";
+import { PDFParse } from "pdf-parse";
 
 export const maxDuration = 60;
 
@@ -23,10 +24,23 @@ export async function POST(request) {
     } catch (_) {}
 
     const body = await request.json();
-    const { resumeText, targetRole = "Software Engineer", fileName = "resume.pdf" } = body;
+    let { resumeText, targetRole = "Software Engineer", fileName = "resume.pdf" } = body;
 
     if (!resumeText || !resumeText.trim()) {
       return NextResponse.json({ error: "Resume text or document content is required" }, { status: 400 });
+    }
+
+    // Auto-detect and extract if raw PDF binary/bytecode was passed in resumeText
+    if (resumeText.trim().startsWith("%PDF")) {
+      try {
+        const parser = new PDFParse({ data: Buffer.from(resumeText, "binary") });
+        const pdfResult = await parser.getText();
+        if (pdfResult?.text && pdfResult.text.trim().length > 20) {
+          resumeText = pdfResult.text.replace(/--\s*\d+\s+of\s+\d+\s*--/gi, "").trim();
+        }
+      } catch (pdfErr) {
+        console.warn("[POST /api/resume/analyze] Raw PDF extraction attempt:", pdfErr.message);
+      }
     }
 
     const prompt = `You are PREP-AI's Chief Talent Officer and Principal Technical Hiring Manager with 15+ years of recruitment and ATS engineering experience at FAANG and top startups.
@@ -136,10 +150,9 @@ Return ONLY a valid JSON object in this exact structure:
       const session = createChatSession();
       const result = await session.sendMessage(prompt);
       const responseText = result.response.text();
-      const cleaned = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
-      analysis = JSON.parse(cleaned);
+      analysis = cleanAndParseJson(responseText);
     } catch (aiErr) {
-      console.warn("[POST /api/resume/analyze] AI fallback activated:", aiErr.message);
+      console.warn("[POST /api/resume/analyze] Claude parsing error:", aiErr.message);
     }
 
     // High quality fallback if AI format failed

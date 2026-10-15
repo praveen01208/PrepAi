@@ -37,13 +37,14 @@ export default function ResumeAnalyzerPage() {
   const [targetRole, setTargetRole] = useState("Full Stack Developer");
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [parsingFile, setParsingFile] = useState(false);
   const [startingInterview, setStartingInterview] = useState(false);
   const [result, setResult] = useState(null);
   const fileInputRef = useRef();
 
-  // Multi-format file uploader (PDF, DOCX, TXT)
+  // Multi-format file uploader (PDF, DOCX, TXT) with robust server-side text extraction
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadedFileName(file.name);
@@ -56,32 +57,40 @@ export default function ResumeAnalyzerPage() {
         toast.success(`Loaded text file: ${file.name}`);
       };
       reader.readAsText(file);
-    } else if (fileName.endsWith(".pdf") || fileName.endsWith(".docx")) {
-      // For PDF / Word files in browser, read arrayBuffer or text representation
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        try {
-          const buffer = ev.target.result;
-          // Extract readable ASCII/Unicode text chunks from buffer
-          const decoder = new TextDecoder("utf-8", { fatal: false });
-          const decoded = decoder.decode(buffer);
-          // Filter readable words
-          const cleanText = decoded
-            .replace(/[^\x20-\x7E\t\n\r]/g, " ")
-            .replace(/\s+/g, " ")
-            .trim();
-          
-          if (cleanText.length > 100) {
-            setResumeText(cleanText);
-            toast.success(`Extracted content from ${file.name}`);
-          } else {
-            toast.info(`Uploaded ${file.name}. Please confirm or paste your resume text if parsing was partial.`);
-          }
-        } catch (err) {
-          toast.warning("Could not extract binary PDF text. Please paste text directly.");
+      return;
+    }
+
+    if (fileName.endsWith(".pdf") || fileName.endsWith(".docx")) {
+      setParsingFile(true);
+      const loadingToastId = toast.loading(`Extracting text from ${file.name}...`);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/resume/parse", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to extract text from document");
         }
-      };
-      reader.readAsArrayBuffer(file);
+
+        setResumeText(data.text);
+        toast.success(`Extracted ${data.wordCount} words from ${file.name}`, {
+          id: loadingToastId,
+        });
+      } catch (err) {
+        console.error("Document parsing error:", err);
+        toast.error(
+          err.message || "Could not parse document. You can also paste your resume text directly.",
+          { id: loadingToastId }
+        );
+      } finally {
+        setParsingFile(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
     } else {
       toast.error("Please upload a .pdf, .docx, or .txt file");
     }
@@ -193,10 +202,20 @@ export default function ResumeAnalyzerPage() {
                 <span className="text-xs text-slate-400">Upload your resume (PDF, DOCX, TXT) or paste text below</span>
               </div>
               <button
+                type="button"
+                disabled={parsingFile}
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 text-xs px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all font-bold"
+                className="flex items-center gap-2 text-xs px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Upload className="w-3.5 h-3.5" /> Upload File (PDF / DOCX)
+                {parsingFile ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Extracting Text...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5" /> Upload File (PDF / DOCX)
+                  </>
+                )}
               </button>
               <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
             </div>
