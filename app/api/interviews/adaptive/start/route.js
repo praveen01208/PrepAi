@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { AdaptiveInterview, AdaptiveQuestion } from "@/utils/schema";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 import { v4 as uuidv4 } from "uuid";
 
 // POST /api/interviews/adaptive/start

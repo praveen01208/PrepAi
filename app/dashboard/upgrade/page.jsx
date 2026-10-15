@@ -17,7 +17,7 @@ const Upgrade = () => {
       desc: "Perfect for getting familiar with AI mock interviews",
       features: [
         "Unlimited standard mock sessions",
-        "Gemini speech transcription",
+        "Real-time voice speech transcription",
         "360° answer scoring & feedback",
         "Public question banks",
       ],
@@ -32,7 +32,7 @@ const Upgrade = () => {
         "Everything in Free tier",
         "Advanced System Design scenarios",
         "Company-specific question generators (FAANG / Fortune 500)",
-        "Priority Gemini AI processing speed",
+        "Priority Claude AI processing speed",
         "Full interview history & trend analytics",
       ],
       popular: true,

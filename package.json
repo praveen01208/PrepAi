@@ -12,6 +12,7 @@
     "db:seed": "tsx ./scripts/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.134.0",
     "@clerk/nextjs": "^5.1.5",
     "@clerk/themes": "^2.1.9",
     "@google/generative-ai": "^0.13.0",

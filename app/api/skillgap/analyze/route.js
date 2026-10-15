@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 
 // POST /api/skillgap/analyze
 // Analyzes skill gaps for target role and creates a 4-week personalized preparation roadmap

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { AdaptiveInterview, AdaptiveQuestion, UserSkillMatrix } from "@/utils/schema";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 import { eq } from "drizzle-orm";
 
 // Common filler words regex

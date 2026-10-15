@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 
 export async function POST(request) {
   try {

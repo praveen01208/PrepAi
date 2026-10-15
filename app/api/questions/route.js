@@ -4,7 +4,7 @@ import { db } from "@/utils/db";
 import { Question } from "@/utils/schema";
 import { v4 as uuidv4 } from "uuid";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 
 export async function POST(request) {
   try {
@@ -43,13 +43,12 @@ export async function POST(request) {
     ]
     `;
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-    const result = await model.generateContent(prompt);
+    const session = createChatSession();
+    const result = await session.sendMessage(prompt);
 
     const MockQuestionJsonResp = result.response
       .text()
-      .replace(/```json/g, "")
+      .replace(/```json/gi, "")
       .replace(/```/g, "")
       .trim();
 

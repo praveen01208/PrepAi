@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 
 // POST /api/leetcode/evaluate — evaluates DSA code submissions
 export async function POST(request) {

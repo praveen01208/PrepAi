@@ -21,7 +21,15 @@ export async function POST(request) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const base64Audio = Buffer.from(arrayBuffer).toString("base64");
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      return NextResponse.json({
+        transcription: "",
+        warning: "Audio transcription requires a speech-to-text service or Web Speech API.",
+      });
+    }
+
+    const genAI = new GoogleGenerativeAI(geminiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const result = await model.generateContent([

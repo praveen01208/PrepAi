@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 import { rateLimit } from "@/utils/rateLimit";
 
 // POST /api/interviews/[id]/answer — evaluate answer with Gemini and save to DB

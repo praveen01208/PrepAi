@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { MockInterview } from "@/utils/schema";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 import { rateLimit } from "@/utils/rateLimit";
 import { v4 as uuidv4 } from "uuid";
 

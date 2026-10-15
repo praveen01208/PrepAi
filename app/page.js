@@ -541,7 +541,7 @@ export default function LandingPage() {
               <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-5">
                 <Cpu className="w-5 h-5" />
               </div>
-              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Gemini AI Code Evaluator</h4>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">Claude AI Code Evaluator</h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Instant evaluation of algorithmic logic, Big-O time/space complexity, boundary edge cases, and code style.
               </p>
@@ -637,7 +637,7 @@ export default function LandingPage() {
             <Bot className="w-4 h-4 text-cyan-400" />
             <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-wider">PREP-AI</span>
           </div>
-          <p>© {new Date().getFullYear()} PREP-AI Engineering Studio. Built with Next.js &amp; Gemini AI.</p>
+          <p>© {new Date().getFullYear()} PREP-AI Engineering Studio. Built with Next.js &amp; Claude AI.</p>
         </div>
       </footer>
     </div>

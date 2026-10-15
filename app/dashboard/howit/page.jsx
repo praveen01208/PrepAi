@@ -16,7 +16,7 @@ const HowItWorks = () => {
     {
       step: "01",
       title: "Configure Your Target Role & Experience",
-      desc: "Specify your desired role (e.g. Senior Frontend, Staff Backend, ML Engineer), your target tech stack, and your years of experience. Our Gemini engine immediately builds a custom tailored syllabus of questions with real interview rigor.",
+      desc: "Specify your desired role (e.g. Senior Frontend, Staff Backend, ML Engineer), your target tech stack, and your years of experience. Our Claude AI engine immediately builds a custom tailored syllabus of questions with real interview rigor.",
       icon: BookOpen,
       gradient: "from-blue-600 to-indigo-600",
     },
@@ -112,7 +112,7 @@ const HowItWorks = () => {
               How does the audio transcription work?
             </AccordionTrigger>
             <AccordionContent className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              When you click &ldquo;Record Answer&rdquo;, your speech is captured and transcribed with high accuracy via Gemini AI multimodal recognition.
+              When you click &ldquo;Record Answer&rdquo;, your speech is captured and transcribed with high accuracy in real time via speech recognition.
             </AccordionContent>
           </AccordionItem>
 

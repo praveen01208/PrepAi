@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { ResumeProfile } from "@/utils/schema";
-import { createChatSession } from "@/utils/GeminiAIModal";
+import { createChatSession } from "@/utils/ClaudeAIModal";
 
 // POST /api/resume/analyze
 // Extracts structured entities (skills by category, projects, experience), calculates ATS breakdown, compares against target role, and generates resume interview questions.
