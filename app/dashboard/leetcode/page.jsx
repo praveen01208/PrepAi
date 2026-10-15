@@ -29,6 +29,8 @@ import {
   Shuffle,
   Calendar,
   Compass,
+  Download,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -184,6 +186,18 @@ const LeetCodeArena = () => {
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               Explore {PROBLEMS.length} curated problems across 14 high-yield concepts asked in FAANG and campus placement drives. Write solutions from scratch with instant AI automated judging.
             </p>
+            <div className="pt-2">
+              <a
+                href="/PREP-AI_LeetCode_Master_Solutions.pdf"
+                download="PREP-AI_LeetCode_Master_Solutions.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-xs shadow-md shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Complete 58 Solutions PDF</span>
+              </a>
+            </div>
           </div>
 
           {/* LeetCode Solved Progress Stats */}
