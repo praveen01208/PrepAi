@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createChatSession } from "@/utils/ClaudeAIModal";
+import { createChatSession, cleanAndParseJson } from "@/utils/ClaudeAIModal";
 
 export const maxDuration = 60;
 
@@ -23,20 +23,20 @@ ${currentSkills.substring(0, 2000)}
 """
 
 Tasks:
-1. Calculate a realistic Job Readiness Score (0-100%) and estimated Time to Job-Ready.
+1. Calculate a realistic Job Readiness Score (0-100%) and estimated Time to Job-Ready based on their actual current skills vs modern industry expectations for "${targetRole}".
 2. Identify:
-   - Strong Skills (already demonstrated)
-   - Developing Skills (needs polishing / deeper trade-offs)
-   - Missing Skills (critical required industry skills not yet present)
-3. Create a comprehensive, personalized 4-Week Preparation Roadmap:
+   - Strong Skills (already demonstrated by the candidate)
+   - Developing Skills (skills mentioned that need polishing or deeper mastery)
+   - Missing Skills (critical required industry skills for "${targetRole}" completely missing from candidate's profile)
+3. Create a comprehensive, personalized 4-Week Preparation Roadmap targeting their specific missing skills:
    - Week 1: Core Fundamentals & Primary Gaps
    - Week 2: Frameworks, APIs & Database Optimization
    - Week 3: System Design, Scalability & Concurrency
    - Week 4: Full Mock Interviews, DSA Speed Practice & Portfolio Polish
-   Include specific tasks and curated free learning resources/links for each week.
+   Include specific actionable tasks and curated learning resources/links for each week.
 4. Recommend top portfolio projects to build and key certifications.
 
-Return ONLY a valid JSON object in this exact format:
+Return ONLY a valid JSON object in this exact schema (no trailing commas, properly escaped string values):
 {
   "readinessScore": 68,
   "timeToReady": "4-6 weeks",
@@ -101,7 +101,7 @@ Return ONLY a valid JSON object in this exact format:
     "Real-time Collaboration Canvas using WebSockets and PostgreSQL"
   ],
   "certifications": ["AWS Certified Developer Associate", "Docker Certified Associate"],
-  "summary": "Executive summary of the candidate's career readiness and top advice for breaking into " + "${targetRole}."
+  "summary": "Personalized summary of candidate's career readiness and top advice for breaking into ${targetRole}."
 }`;
 
     let analysis = null;
@@ -109,10 +109,9 @@ Return ONLY a valid JSON object in this exact format:
       const session = createChatSession();
       const result = await session.sendMessage(prompt);
       const responseText = result.response.text();
-      const cleaned = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
-      analysis = JSON.parse(cleaned);
+      analysis = cleanAndParseJson(responseText);
     } catch (aiErr) {
-      console.warn("[POST /api/skillgap/analyze] AI fallback activated:", aiErr.message);
+      console.warn("[POST /api/skillgap/analyze] Claude parsing error:", aiErr.message);
     }
 
     if (!analysis || typeof analysis.readinessScore === "undefined") {

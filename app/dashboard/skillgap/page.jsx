@@ -78,7 +78,15 @@ export default function SkillGapPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentSkills, targetRole, targetCompany }),
       });
-      const data = await res.json();
+
+      const rawText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (_) {
+        throw new Error("Analysis service returned an invalid response. Please try again.");
+      }
+
       if (!res.ok) throw new Error(data.error || "Analysis failed");
       setResult(data);
       toast.success("Skill gap analysis & 4-week roadmap generated!");
