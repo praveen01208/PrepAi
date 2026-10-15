@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createChatSession } from "@/utils/ClaudeAIModal";
 
+export const maxDuration = 60;
+
 // POST /api/skillgap/analyze
 // Analyzes skill gaps for target role and creates a 4-week personalized preparation roadmap
 export async function POST(request) {

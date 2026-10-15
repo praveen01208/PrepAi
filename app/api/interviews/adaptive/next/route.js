@@ -5,6 +5,8 @@ import { AdaptiveInterview, AdaptiveQuestion, UserSkillMatrix } from "@/utils/sc
 import { createChatSession } from "@/utils/ClaudeAIModal";
 import { eq } from "drizzle-orm";
 
+export const maxDuration = 60;
+
 // Common filler words regex
 const FILLER_WORDS_REGEX = /\b(um|uh|er|ah|like|basically|actually|you know|literally|sort of|kind of|i mean|honestly|right)\b/gi;
 

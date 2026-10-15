@@ -5,6 +5,8 @@ import { AdaptiveInterview, AdaptiveQuestion } from "@/utils/schema";
 import { createChatSession } from "@/utils/ClaudeAIModal";
 import { v4 as uuidv4 } from "uuid";
 
+export const maxDuration = 60;
+
 // POST /api/interviews/adaptive/start
 // Initializes an adaptive interview session and generates the first calibrated question.
 export async function POST(request) {

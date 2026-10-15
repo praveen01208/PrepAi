@@ -5,7 +5,9 @@ import { UserAnswer } from "@/utils/schema";
 import { createChatSession } from "@/utils/ClaudeAIModal";
 import { rateLimit } from "@/utils/rateLimit";
 
-// POST /api/interviews/[id]/answer — evaluate answer with Gemini and save to DB
+export const maxDuration = 60;
+
+// POST /api/interviews/[id]/answer — evaluate answer with Claude and save to DB
 export async function POST(request, { params }) {
   try {
     // Auth is graceful — allow guest submissions

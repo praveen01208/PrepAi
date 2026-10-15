@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createChatSession } from "@/utils/ClaudeAIModal";
 
+export const maxDuration = 60;
+
 // POST /api/leetcode/evaluate — evaluates DSA code submissions
 export async function POST(request) {
   try {

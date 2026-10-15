@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createChatSession } from "@/utils/ClaudeAIModal";
 
+export const maxDuration = 60;
+
 export async function POST(request) {
   try {
     const body = await request.json();

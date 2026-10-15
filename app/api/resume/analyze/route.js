@@ -4,6 +4,8 @@ import { db } from "@/utils/db";
 import { ResumeProfile } from "@/utils/schema";
 import { createChatSession } from "@/utils/ClaudeAIModal";
 
+export const maxDuration = 60;
+
 // POST /api/resume/analyze
 // Extracts structured entities (skills by category, projects, experience), calculates ATS breakdown, compares against target role, and generates resume interview questions.
 export async function POST(request) {

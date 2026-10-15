@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 
 import { createChatSession } from "@/utils/ClaudeAIModal";
 
+export const maxDuration = 60;
+
 export async function POST(request) {
   try {
     const { userId } = await auth();

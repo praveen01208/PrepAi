@@ -6,7 +6,9 @@ import { createChatSession } from "@/utils/ClaudeAIModal";
 import { rateLimit } from "@/utils/rateLimit";
 import { v4 as uuidv4 } from "uuid";
 
-// POST /api/interviews — generate questions via Gemini and save interview
+export const maxDuration = 60;
+
+// POST /api/interviews — generate questions via Claude and save interview
 export async function POST(request) {
   try {
     let userId = "guest_user";
