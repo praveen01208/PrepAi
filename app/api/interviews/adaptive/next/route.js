@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/utils/db";
 import { AdaptiveInterview, AdaptiveQuestion, UserSkillMatrix } from "@/utils/schema";
-import { createChatSession } from "@/utils/ClaudeAIModal";
+import { createChatSession, cleanAndParseJson } from "@/utils/ClaudeAIModal";
 import { eq } from "drizzle-orm";
 
 export const maxDuration = 60;
@@ -82,13 +82,14 @@ Session History Summary:
 ${history.slice(-3).map((h, i) => `Q${i + 1}: ${h.q} | Score: ${h.score || 70}`).join("\n") || "First question in session"}
 ${resumeContext ? `Resume Context: ${resumeContext.substring(0, 800)}` : ""}
 
-Evaluate the response across:
-1. Correctness & Technical Accuracy (0-100)
-2. Technical Depth & Trade-offs (0-100)
-3. Communication Clarity & Structure (STAR method where applicable) (0-100)
-4. Question Relevance (0-100)
-5. Overall Combined Score (0-100)
-6. Communication Confidence estimation: High, Moderate, or Hesitant
+CRITICAL SCORING & ANALYSIS RULES:
+1. Compare the Candidate's Submission directly against the Current Question and Ideal / Reference Points.
+2. RIGOROUS REALISTIC SCORING (DO NOT anchor to example numbers or return generic high scores):
+   - Irrelevant, blank, gibberish, evasive, or "I don't know" answers MUST receive an overall score between 5 and 25.
+   - Shallow or incomplete answers that barely touch the surface score between 35 and 60.
+   - Clear, competent answers covering core concepts score between 70 and 85.
+   - Comprehensive, expert answers with deep trade-offs, architecture, and edge cases score between 86 and 98.
+3. In "feedback", "strengths", and "weaknesses", cite specific technical points from the candidate's actual words.
 
 Adaptive Rules for Next Question:
 - If Overall Score >= 80: Action is "escalate". Increase difficulty (Beginner -> Intermediate -> Advanced). Generate a deeper, advanced question or system architecture challenge building on their strength.
@@ -96,16 +97,16 @@ Adaptive Rules for Next Question:
 - If Overall Score < 60: Action is "simplify". Decrease difficulty (Advanced -> Intermediate -> Beginner). Identify their weak area and generate a helpful foundational or clarifying question so they can explain the core concepts clearly.
 ${isFinalQuestion ? "NOTE: This was the final question of the interview. Do not generate a next question; summarize session strengths, weaknesses, and recommended topics." : ""}
 
-Return ONLY a valid JSON object in this exact format:
+Return ONLY a valid JSON object matching this schema:
 {
-  "score": 82,
-  "technicalScore": 85,
-  "clarityScore": 80,
-  "relevanceScore": 90,
-  "confidenceRating": "High",
-  "feedback": "Concise 2-4 sentence assessment highlighting strengths and specific improvement tips.",
-  "strengths": ["Clear problem framing", "Mentioned time complexity"],
-  "weaknesses": ["Could elaborate more on edge case handling"],
+  "score": 75,
+  "technicalScore": 78,
+  "clarityScore": 72,
+  "relevanceScore": 80,
+  "confidenceRating": "Moderate",
+  "feedback": "Specific, tailored assessment referencing candidate's actual answer.",
+  "strengths": ["Specific strength 1", "Specific strength 2"],
+  "weaknesses": ["Specific weakness 1", "Specific weakness 2"],
   "adaptiveAction": "escalate",
   "nextDifficulty": "${currentDifficulty === "Beginner" ? "Intermediate" : "Advanced"}",
   "nextQuestion": ${
@@ -122,15 +123,15 @@ Return ONLY a valid JSON object in this exact format:
   "summaryReport": ${
     isFinalQuestion
       ? `{
-    "overallScore": 84,
-    "technicalScore": 86,
-    "communicationScore": 82,
-    "codingScore": 80,
-    "verdict": "Strong Candidate",
-    "strengths": ["Solid algorithmic foundation", "Structured technical communication"],
-    "weaknesses": ["Could quantify impact more", "Brush up on concurrency"],
-    "recommendedTopics": ["Distributed Caching", "STAR Method Framing", "SQL Query Optimization"],
-    "nextPracticeSuggestion": "Practice System Design & Concurrency Mock Sessions"
+    "overallScore": 78,
+    "technicalScore": 80,
+    "communicationScore": 75,
+    "codingScore": 76,
+    "verdict": "Candidate Evaluated",
+    "strengths": ["Key strength from session"],
+    "weaknesses": ["Key growth area from session"],
+    "recommendedTopics": ["Topic 1", "Topic 2"],
+    "nextPracticeSuggestion": "Suggested practice topic"
   }`
       : "null"
   }
@@ -141,28 +142,30 @@ Return ONLY a valid JSON object in this exact format:
       const session = createChatSession();
       const aiResult = await session.sendMessage(evaluationPrompt);
       const responseText = aiResult.response.text();
-      const cleaned = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
-      evalResult = JSON.parse(cleaned);
+      evalResult = cleanAndParseJson(responseText);
     } catch (aiErr) {
       console.warn("[POST /api/interviews/adaptive/next] AI eval fallback activated:", aiErr.message);
     }
 
     // High quality fallback if AI parsing fails
     if (!evalResult || typeof evalResult.score === "undefined") {
-      const estimatedScore = Math.min(Math.max(Math.round(wordCount * 1.5 + (totalFillerCount === 0 ? 30 : 20)), 50), 92);
+      const isGibberish = wordCount < 5 || /(asdf|qwer|test|bla|xyz)/i.test(userResponse);
+      const estimatedScore = isGibberish ? 15 : Math.min(Math.max(Math.round(wordCount > 40 ? 75 : 55), 25), 90);
       const isGood = estimatedScore >= 75;
       const nextDiff = isGood ? (currentDifficulty === "Beginner" ? "Intermediate" : "Advanced") : "Intermediate";
 
       evalResult = {
         score: estimatedScore,
-        technicalScore: estimatedScore + 2,
-        clarityScore: estimatedScore - 3,
-        relevanceScore: 85,
+        technicalScore: isGibberish ? 10 : estimatedScore,
+        clarityScore: isGibberish ? 15 : estimatedScore,
+        relevanceScore: isGibberish ? 10 : 70,
         confidenceRating: totalFillerCount > 4 ? "Hesitant" : "Moderate",
-        feedback: "Good structured response. Make sure to clearly outline your approach first, state any assumptions, and discuss efficiency trade-offs.",
-        strengths: ["Clear terminology", "Addressed the core problem"],
-        weaknesses: ["Add more specific real-world metrics"],
-        adaptiveAction: isGood ? "escalate" : "follow_up",
+        feedback: isGibberish
+          ? "The response did not answer the technical question asked. Please articulate a structured technical solution."
+          : "Your answer touches upon the core problem. Focus on providing concrete technical terminology, algorithmic complexity, and edge case trade-offs.",
+        strengths: isGibberish ? ["Submission recorded"] : ["Addresses problem context", "Clear pacing"],
+        weaknesses: isGibberish ? ["Did not answer technical prompt"] : ["Explain internal mechanics", "Quantify operational impact"],
+        adaptiveAction: isGood ? "escalate" : (isGibberish ? "simplify" : "follow_up"),
         nextDifficulty: nextDiff,
         nextQuestion: isFinalQuestion ? null : {
           questionText: `Building on your explanation, how would you optimize this solution for higher throughput and what potential bottlenecks would you monitor in production?`,
@@ -174,11 +177,11 @@ Return ONLY a valid JSON object in this exact format:
         summaryReport: isFinalQuestion ? {
           overallScore: estimatedScore,
           technicalScore: estimatedScore,
-          communicationScore: 80,
-          codingScore: 78,
-          verdict: "Candidate Recommended",
-          strengths: ["Good domain knowledge", "Clear explanations"],
-          weaknesses: ["Provide deeper trade-off discussions"],
+          communicationScore: 75,
+          codingScore: 70,
+          verdict: isGood ? "Candidate Recommended" : "Needs Further Practice",
+          strengths: ["Domain familiarity"],
+          weaknesses: ["Deepen system trade-offs"],
           recommendedTopics: ["System Design Trade-offs", "STAR Impact Quantification"],
           nextPracticeSuggestion: "Try a High-Concurrency Backend Session"
         } : null

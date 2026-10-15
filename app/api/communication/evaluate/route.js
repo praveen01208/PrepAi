@@ -1,28 +1,7 @@
 import { NextResponse } from "next/server";
-import { createChatSession } from "@/utils/ClaudeAIModal";
+import { createChatSession, cleanAndParseJson } from "@/utils/ClaudeAIModal";
 
 export const maxDuration = 60;
-
-function cleanAndParseJson(raw) {
-  let cleaned = raw
-    .replace(/```json/gi, "")
-    .replace(/```/g, "")
-    .trim();
-
-  const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1) {
-    cleaned = cleaned.substring(firstBrace, lastBrace + 1);
-  }
-
-  // Repair unquoted parentheses after quotes: "phrase" (explanation), -> "phrase (explanation)",
-  cleaned = cleaned.replace(/"([^"\n\r]+)"\s*\(([^)\n\r]+)\)/g, '"$1 ($2)"');
-
-  // Remove trailing commas before closing braces or brackets
-  cleaned = cleaned.replace(/,\s*([\]}])/g, "$1");
-
-  return JSON.parse(cleaned);
-}
 
 function generateFallbackAnalysis(userResponse, question) {
   const words = userResponse.trim().split(/\s+/).filter(Boolean);
@@ -32,12 +11,14 @@ function generateFallbackAnalysis(userResponse, question) {
   const fillersFound = (userResponse.match(fillerRegex) || []).map((w) => w.toLowerCase());
   const uniqueFillers = [...new Set(fillersFound)];
 
-  const clarityScore = Math.min(Math.max(Math.round(wordCount > 30 ? 78 : 65), 50), 92);
-  const structureScore = userResponse.includes("because") || userResponse.includes("result") || userResponse.includes("impact") ? 80 : 68;
-  const confidenceScore = uniqueFillers.length === 0 ? 85 : Math.max(85 - uniqueFillers.length * 5, 55);
-  const relevanceScore = 80;
-  const concisenessScore = wordCount > 200 ? 65 : 82;
-  const technicalScore = /\b(react|node|api|database|system|service|scale|architecture|python|java|sql)\b/i.test(userResponse) ? 82 : 70;
+  const isNonsensical = wordCount < 5 || /(asdf|qwer|test|bla|xyz)/i.test(userResponse);
+
+  const clarityScore = isNonsensical ? 15 : Math.min(Math.max(Math.round(wordCount > 30 ? 76 : 58), 25), 90);
+  const structureScore = isNonsensical ? 10 : (userResponse.includes("because") || userResponse.includes("result") || userResponse.includes("impact") ? 78 : 60);
+  const confidenceScore = isNonsensical ? 20 : (uniqueFillers.length === 0 ? 82 : Math.max(82 - uniqueFillers.length * 6, 45));
+  const relevanceScore = isNonsensical ? 10 : 65;
+  const concisenessScore = wordCount > 250 ? 55 : (isNonsensical ? 20 : 75);
+  const technicalScore = /\b(react|node|api|database|system|service|scale|architecture|python|java|sql|docker|cloud)\b/i.test(userResponse) ? 80 : (isNonsensical ? 10 : 55);
 
   const overall = Math.round(
     (clarityScore + structureScore + confidenceScore + relevanceScore + concisenessScore + technicalScore) / 6
@@ -48,52 +29,56 @@ function generateFallbackAnalysis(userResponse, question) {
     scores: {
       clarity: {
         score: clarityScore,
-        feedback: "Your phrasing conveys core ideas. Add concrete examples to further sharpen clarity.",
+        feedback: isNonsensical
+          ? "The answer lacks clear communication and does not formulate an intelligible response."
+          : "Your thoughts are understandable. Provide concrete technical details to elevate clarity.",
       },
       structure: {
         score: structureScore,
-        feedback: "Organize with the STAR method (Situation, Task, Action, Result) for maximum impact.",
+        feedback: "Structure your thoughts using the STAR framework (Situation, Task, Action, Result).",
       },
       confidence: {
         score: confidenceScore,
         feedback:
           uniqueFillers.length > 0
-            ? `Minimizing filler words like ${uniqueFillers.slice(0, 3).map((f) => `"${f}"`).join(", ")} will immediately elevate your confidence.`
-            : "Strong, poised tone without distracting filler words.",
+            ? `Work on reducing filler words such as ${uniqueFillers.slice(0, 3).map((f) => `"${f}"`).join(", ")} to sound more decisive.`
+            : "Direct delivery with steady pacing.",
       },
       relevance: {
         score: relevanceScore,
-        feedback: "Answers directly address the interviewer's objective.",
+        feedback: isNonsensical
+          ? "The submission did not address the question asked."
+          : "Directly tie your answer back to the problem statement.",
       },
       conciseness: {
         score: concisenessScore,
-        feedback: wordCount > 150 ? "Aim to condense your narrative to 60-90 seconds." : "Well-paced and concise delivery.",
+        feedback: wordCount > 200 ? "Try focusing on key accomplishments and keep your answer within 90 seconds." : "Good response length.",
       },
       technicalDepth: {
         score: technicalScore,
-        feedback: "Demonstrates domain knowledge. Highlight key metrics and architectural trade-offs.",
+        feedback: "Include specific architectural patterns, metrics, and measurable business impact.",
       },
     },
     starAlignment: {
-      situation: { present: true, quality: "good", note: "Context is established early." },
-      task: { present: wordCount > 40, quality: wordCount > 40 ? "good" : "missing", note: "Define the specific challenge or goal." },
-      action: { present: true, quality: "good", note: "Highlights the steps you took." },
+      situation: { present: !isNonsensical, quality: isNonsensical ? "missing" : "adequate", note: "Context setup" },
+      task: { present: wordCount > 35, quality: wordCount > 35 ? "good" : "missing", note: "Challenge identification" },
+      action: { present: !isNonsensical, quality: isNonsensical ? "missing" : "good", note: "Execution steps" },
       result: {
-        present: /\b(\d+%|reduced|improved|increased|saved|built)\b/i.test(userResponse),
+        present: /\b(\d+%|reduced|improved|increased|saved|built|achieved)\b/i.test(userResponse),
         quality: "adequate",
-        note: "Quantify business and engineering outcomes.",
+        note: "Quantifiable outcomes",
       },
     },
     improvements: [
-      "Lead directly with the business result before explaining the technical steps.",
-      "Incorporate specific metrics (e.g. latency reduced by 40%, throughput increased 3x).",
-      "Use strong first-person action verbs: 'architected', 'spearheaded', 'optimized'.",
+      "Explicitly answer the question in the opening sentence before giving background.",
+      "Quantify your accomplishments with measurable metrics (latency, revenue, user count).",
+      "Explain the trade-offs of the engineering decisions you made.",
     ],
     fillerWords: uniqueFillers,
     powerPhrases: ["spearheaded architecture", "cross-functional collaboration", "measurable outcome"],
-    improvedResponse: `In approaching this challenge, I first analyzed the requirements to establish key performance indicators. Next, I designed a resilient solution using industry best practices, actively resolving potential edge cases. As a result, our team delivered the project ahead of schedule while maintaining high system reliability.`,
+    improvedResponse: `When addressing this challenge in my previous role, I first identified the root constraint. I implemented an optimized solution that reduced latency by 35% and improved overall team productivity.`,
     tipOfDay:
-      "In technical interviews, state the outcome upfront. Senior interviewers value engineers who think about business impact first and implementation details second.",
+      "In technical interviews, state the outcome upfront. Interviewers retain measurable results much better than procedural steps.",
   };
 }
 
@@ -106,46 +91,50 @@ export async function POST(request) {
       return NextResponse.json({ error: "Question and response are required" }, { status: 400 });
     }
 
-    const prompt = `You are an expert Communication Coach and Interview Trainer at PREP-AI. Your job is to evaluate how well a candidate communicates their answer to an interview question.
+    const prompt = `You are an expert Executive Communication Coach and Principal Technical Interviewer at PREP-AI.
+Your goal is to deeply analyze the candidate's response to the given interview question.
+
+CRITICAL INSTRUCTIONS:
+1. Carefully compare the Candidate's Response against the Interview Question to determine if they actually answered it with appropriate depth.
+2. RIGOROUS REALISTIC SCORING (DO NOT output fixed, generic, or arbitrary scores):
+   - Irrelevant, nonsensical, gibberish, evasive, or "I don't know" responses MUST score between 5 and 25 overall.
+   - Very brief or superficial responses (lacking explanation, context, or depth) score between 35 and 55.
+   - Competent, clear responses that answer the question well score between 70 and 85.
+   - Comprehensive, compelling responses with STAR structure, specific metrics, and clear impact score between 86 and 98.
+   - Every single number and feedback sentence MUST directly reflect the candidate's actual words and concepts.
 
 Interview Question: ${question}
 Context: ${context || "Technical interview for a software engineering role"}
 
 Candidate's Response:
-"${userResponse.substring(0, 2000)}"
+"${userResponse.substring(0, 3000)}"
 
-Evaluate communication quality across multiple dimensions.
-CRITICAL FORMATTING RULES:
-1. Return ONLY a single, valid JSON object without markdown code fences.
-2. In arrays (such as "powerPhrases" and "improvements"), all elements MUST be pure strings. NEVER place parentheses or notes outside quotes.
-3. No trailing commas.
-
-Required JSON Structure:
+Return ONLY a single valid JSON object with NO markdown fences, matching this schema:
 {
-  "overallScore": 72,
+  "overallScore": 75,
   "scores": {
-    "clarity": { "score": 75, "feedback": "Clear phrasing..." },
-    "structure": { "score": 65, "feedback": "Structure feedback..." },
-    "confidence": { "score": 70, "feedback": "Confidence feedback..." },
-    "relevance": { "score": 80, "feedback": "Relevance feedback..." },
-    "conciseness": { "score": 60, "feedback": "Conciseness feedback..." },
-    "technicalDepth": { "score": 85, "feedback": "Technical depth feedback..." }
+    "clarity": { "score": 75, "feedback": "Detailed feedback on clarity..." },
+    "structure": { "score": 70, "feedback": "Detailed feedback on structure..." },
+    "confidence": { "score": 72, "feedback": "Detailed feedback on confidence..." },
+    "relevance": { "score": 80, "feedback": "Detailed feedback on relevance to this specific question..." },
+    "conciseness": { "score": 74, "feedback": "Detailed feedback on conciseness..." },
+    "technicalDepth": { "score": 78, "feedback": "Detailed feedback on technical depth..." }
   },
   "starAlignment": {
-    "situation": { "present": true, "quality": "good", "note": "..." },
-    "task": { "present": false, "quality": "missing", "note": "..." },
-    "action": { "present": true, "quality": "excellent", "note": "..." },
-    "result": { "present": false, "quality": "missing", "note": "Add quantified results" }
+    "situation": { "present": true, "quality": "good", "note": "Notes on situation..." },
+    "task": { "present": true, "quality": "good", "note": "Notes on task..." },
+    "action": { "present": true, "quality": "good", "note": "Notes on action..." },
+    "result": { "present": false, "quality": "missing", "note": "Notes on results..." }
   },
   "improvements": [
-    "Start with a brief context setting sentence",
-    "Add specific metrics to quantify your impact",
-    "Use 'I' statements instead of 'we' to highlight your contribution"
+    "Specific improvement 1 based on their answer",
+    "Specific improvement 2 based on their answer",
+    "Specific improvement 3 based on their answer"
   ],
   "fillerWords": ["um", "like"],
-  "powerPhrases": ["delivered results", "cross-functional collaboration"],
-  "improvedResponse": "Here is a stronger version of your response that demonstrates better communication...",
-  "tipOfDay": "In technical interviews, lead with the outcome before diving into the approach — it shows you think about impact first."
+  "powerPhrases": ["strong phrase used in answer"],
+  "improvedResponse": "An expertly tailored rewrite of their response specifically answering this question with STAR framework and metrics.",
+  "tipOfDay": "Tailored actionable coaching tip relevant to this question."
 }`;
 
     let analysis = null;

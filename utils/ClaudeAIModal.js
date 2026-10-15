@@ -24,6 +24,44 @@ const CANDIDATE_MODELS = [
   "claude-3-5-sonnet-latest",
 ];
 
+// Helper: robustly clean and parse JSON from Claude responses
+export function cleanAndParseJson(raw) {
+  if (!raw || typeof raw !== "string") {
+    throw new Error("Invalid raw input for JSON parsing");
+  }
+
+  let cleaned = raw
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  // Find outermost { } or [ ]
+  const firstBrace = cleaned.indexOf("{");
+  const firstBracket = cleaned.indexOf("[");
+  let startIdx = -1;
+  let endIdx = -1;
+
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startIdx = firstBrace;
+    endIdx = cleaned.lastIndexOf("}");
+  } else if (firstBracket !== -1) {
+    startIdx = firstBracket;
+    endIdx = cleaned.lastIndexOf("]");
+  }
+
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    cleaned = cleaned.substring(startIdx, endIdx + 1);
+  }
+
+  // Repair unquoted parentheses after quotes: "phrase" (explanation) -> "phrase (explanation)"
+  cleaned = cleaned.replace(/"([^"\n\r]+)"\s*\(([^)\n\r]+)\)/g, '"$1 ($2)"');
+
+  // Remove trailing commas before closing braces or brackets
+  cleaned = cleaned.replace(/,\s*([\]}])/g, "$1");
+
+  return JSON.parse(cleaned);
+}
+
 // Helper: create a chat session compatible with existing sendMessage pattern
 export const createChatSession = () => {
   return {
